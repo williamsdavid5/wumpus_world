@@ -32,8 +32,11 @@ function mapaString(d) {
         }
     }
 
+    //as posições resgatadas sao embaralhadas, assim os elementos serao inseridos de forma aleatoria
     posicoes.sort(() => Math.random() - 0.5);
+    console.log(posicoes)
 
+    //essa matriz de posições é percorrida e os elementos sao inseridos baseado nela
     let index = 0;
     for (let { tag, quantidade } of elementos) {
         for (let k = 0; k < quantidade && index < posicoes.length; k++) {
@@ -57,13 +60,41 @@ function mapaString(d) {
         }
     }
 
-    document.getElementById("saida").innerHTML = matriz.map(linha => linha.join(" | ")).join("<br>");
-    console.log(matriz)
-    document.getElementById("saidaDados").innerHTML = "<p> poço: " + poco + "</p>";
-    document.getElementById("saidaDados").innerHTML += "<p> ouro: " + ouro + "</p>";
-    document.getElementById("saidaDados").innerHTML += "<p> wumpus: " + wumpus + "</p>";
-    document.getElementById("saidaDados").innerHTML += "<p> flecha: " + flecha + "</p>";
+    mapaStyle(d, matriz);
+
+    // document.getElementById("saida").innerHTML = matriz.map(linha => linha.join(" | ")).join("<br>");
+    // console.log(matriz)
+    // document.getElementById("saidaDados").innerHTML = "<p> poço: " + poco + "</p>";
+    // document.getElementById("saidaDados").innerHTML += "<p> ouro: " + ouro + "</p>";
+    // document.getElementById("saidaDados").innerHTML += "<p> wumpus: " + wumpus + "</p>";
+    // document.getElementById("saidaDados").innerHTML += "<p> flecha: " + flecha + "</p>";
 }
 
+function mapaStyle(d, matriz) {
+    let mapa = document.getElementById("mapa");
+    mapa.style.width = d * 100 + 'px';
+    mapa.style.height = d * 100 + 'px';
+    mapa.style.display = 'grid';
+    mapa.style.gridTemplateColumns = 'repeat(' + d + ', 100px)';
+    mapa.style.gridTemplateRows = 'repeat(' + d + ', 100px)';
 
-mapaString(4)
+    for (let i = 0; i < d; i++) {
+        for (let j = 0; j < d; j++) {
+            if (matriz[i][j] === 'X') {
+                document.getElementById("mapa").innerHTML += "<div id=\"sala\"></div>"
+            }
+            if (matriz[i][j] === 'O') {
+                document.getElementById("mapa").innerHTML += "<div id=\"sala\"><div id=\"poco\"></div></div>"
+            }
+            if (matriz[i][j] === '$') {
+                document.getElementById("mapa").innerHTML += "<div id=\"sala\"><h1>$</h1></div>"
+            }
+            if (matriz[i][j] === ':(') {
+                document.getElementById("mapa").innerHTML += "<div id=\"sala\"><h1>:(</h1></div>"
+            }
+        }
+    }
+
+}
+
+mapaString(4);
