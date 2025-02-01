@@ -151,20 +151,23 @@ function mapaStyle(d, matriz) {
     for (let i = 0; i < d; i++) {
         for (let j = 0; j < d; j++) {
             if (matriz[i][j].includes("O")) {
-                document.getElementById(i + "," + j).innerHTML += "<h1>O</h1>";
+                document.getElementById(i + "," + j).innerHTML += "<img src=\"textures/role.png\" id=\"ouroItem\" alt=\"\">";
+                // document.getElementById(i + "," + j).innerHTML += "<h1>O</h1>";
             }
             if (matriz[i][j].includes(":(")) {
-                document.getElementById(i + "," + j).innerHTML += "<h1>:(</h1>";
+                document.getElementById(i + "," + j).innerHTML += "<img src=\"textures/wumpus.png\" id=\"ouroItem\" alt=\"\">";
+                // document.getElementById(i + "," + j).innerHTML += "<h1>:(</h1>";
             }
             if (matriz[i][j].includes("$")) {
-                document.getElementById(i + "," + j).innerHTML += "<h1>$</h1>";
+                // document.getElementById(i + "," + j).innerHTML += "<h1>$</h1>";
+                document.getElementById(i + "," + j).innerHTML += "<img src=\"textures/gold_ingot.png\" id=\"ouroItem\" alt=\"\">";
             }
-            if (matriz[i][j].includes("p#")) {
-                document.getElementById(i + "," + j).innerHTML += "<p>brisa</p>";
-            }
-            if (matriz[i][j].includes("w#")) {
-                document.getElementById(i + "," + j).innerHTML += "<p>fedor</p>";
-            }
+            // if (matriz[i][j].includes("p#")) {
+            //     document.getElementById(i + "," + j).innerHTML += "<p>brisa</p>";
+            // }
+            // if (matriz[i][j].includes("w#")) {
+            //     document.getElementById(i + "," + j).innerHTML += "<p>fedor</p>";
+            // }
         }
     }
 
