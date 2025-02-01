@@ -27,9 +27,23 @@ body {
     margin: 2px;
 }
 
+.sala img {
+    width: 90%;
+    height: 90%;
+}
+
 #sala #poco {
     background-color: white;
     width: 80px;
     height: 80px;
     border-radius: 200px;
+}
+
+#passoButton {
+    margin-top: 10px;
+    background-color: black;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
 }

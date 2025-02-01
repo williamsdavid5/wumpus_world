@@ -14,7 +14,7 @@ function mapaString(d) {
     let fedorTag = "w#";
 
     //gera uma matriz preenchida
-    let matriz = Array.from({ length: d }, () => Array(d).fill("X"));
+    matriz = Array.from({ length: d }, () => Array(d).fill("X"));
 
     //uma tag é associada a cada elemento
     let elementos = [
@@ -37,31 +37,6 @@ function mapaString(d) {
     //as posições resgatadas sao embaralhadas, assim os elementos serao inseridos de forma aleatoria
     posicoes.sort(() => Math.random() - 0.5);
 
-    //essa matriz de posições é percorrida e os elementos sao inseridos baseado nela
-    // let index = 0;
-    // for (let { tag, quantidade } of elementos) {
-    //     for (let k = 0; k < quantidade && index < posicoes.length; k++) {
-    //         let [x, y] = posicoes[index++];
-
-    //         if (tag == pocoTag) {
-    //             if (matriz[x][y] === "X") {
-    //                 matriz[x][y] = tag;
-    //                 marcarPerigo(matriz, x, y, d, brisaTag)
-    //             }
-    //         } else {
-    //             if (matriz[x][y] != pocoTag && matriz[x][y] != outoTag && matriz[x][y] !== wumpusTag) {
-    //                 // matriz[x][y] = "";
-    //                 if (matriz[x][y] === "X") {
-    //                     matriz[x][y] = "";
-    //                 }
-    //                 matriz[x][y] += tag;
-    //             } else if (matriz[x][y] === "X") {
-    //                 matriz[x][y] = tag;
-    //             }
-    //         }
-    //     }
-    // }
-
     let index = 0;
     for (let { tag, quantidade } of elementos) {
         for (let k = 0; k < quantidade && index < posicoes.length; k++) {
@@ -82,16 +57,7 @@ function mapaString(d) {
             }
         }
     }
-
-    console.log(matriz);
     mapaStyle(d, matriz);
-
-    // document.getElementById("saida").innerHTML = matriz.map(linha => linha.join(" | ")).join("<br>");
-    // console.log(matriz)
-    // document.getElementById("saidaDados").innerHTML = "<p> poço: " + poco + "</p>";
-    // document.getElementById("saidaDados").innerHTML += "<p> ouro: " + ouro + "</p>";
-    // document.getElementById("saidaDados").innerHTML += "<p> wumpus: " + wumpus + "</p>";
-    // document.getElementById("saidaDados").innerHTML += "<p> flecha: " + flecha + "</p>";
 }
 
 function marcarPerigo(matriz, x, y, d, perigotag) {
@@ -122,26 +88,6 @@ function mapaStyle(d, matriz) {
     mapa.style.gridTemplateColumns = 'repeat(' + d + ', ' + mapaTamanho + 'px)';
     mapa.style.gridTemplateRows = 'repeat(' + d + ', ' + mapaTamanho + 'px)';
 
-    // for (let i = 0; i < d; i++) {
-    //     for (let j = 0; j < d; j++) {
-    //         if (matriz[i][j] === 'X') {
-    //             document.getElementById("mapa").innerHTML += "<div id=\"sala\"></div>"
-    //         }
-    //         if (matriz[i][j] === 'O') {
-    //             document.getElementById("mapa").innerHTML += "<div id=\"sala\"><div id=\"poco\"></div></div>"
-    //         }
-    //         if (matriz[i][j] === '$') {
-    //             document.getElementById("mapa").innerHTML += "<div id=\"sala\"><h1>$</h1></div>"
-    //         }
-    //         if (matriz[i][j] === ':(') {
-    //             document.getElementById("mapa").innerHTML += "<div id=\"sala\"><h1>:(</h1></div>"
-    //         }
-    //         if (matriz[i][j] === ':($' || matriz[i][j] === '$:(') {
-    //             document.getElementById("mapa").innerHTML += "<div id=\"sala\"><h1>:( $</h1></div>"
-    //         }
-    //     }
-    // }
-
     for (let i = 0; i < d; i++) {
         for (let j = 0; j < d; j++) {
             document.getElementById("mapa").innerHTML += "<div id=" + i + "," + j + " class = \"sala\"></div>"
@@ -151,26 +97,128 @@ function mapaStyle(d, matriz) {
     for (let i = 0; i < d; i++) {
         for (let j = 0; j < d; j++) {
             if (matriz[i][j].includes("O")) {
-                document.getElementById(i + "," + j).innerHTML += "<img src=\"textures/role.png\" id=\"ouroItem\" alt=\"\">";
+                document.getElementById(i + "," + j).innerHTML += "<img src=\"textures/role.png\" id=\"buraco\" alt=\"\">";
                 // document.getElementById(i + "," + j).innerHTML += "<h1>O</h1>";
             }
             if (matriz[i][j].includes(":(")) {
-                document.getElementById(i + "," + j).innerHTML += "<img src=\"textures/wumpus.png\" id=\"ouroItem\" alt=\"\">";
+                document.getElementById(i + "," + j).innerHTML += "<img src=\"textures/wumpus.png\" id=\"wumpus\" alt=\"\">";
                 // document.getElementById(i + "," + j).innerHTML += "<h1>:(</h1>";
             }
             if (matriz[i][j].includes("$")) {
                 // document.getElementById(i + "," + j).innerHTML += "<h1>$</h1>";
                 document.getElementById(i + "," + j).innerHTML += "<img src=\"textures/gold_ingot.png\" id=\"ouroItem\" alt=\"\">";
             }
-            // if (matriz[i][j].includes("p#")) {
-            //     document.getElementById(i + "," + j).innerHTML += "<p>brisa</p>";
-            // }
-            // if (matriz[i][j].includes("w#")) {
-            //     document.getElementById(i + "," + j).innerHTML += "<p>fedor</p>";
-            // }
+            if (matriz[i][j].includes("Ag")) {
+                // document.getElementById(i + "," + j).innerHTML += "<h1>$</h1>";
+                document.getElementById(i + "," + j).innerHTML += "<img src=\"textures/agente.png\" id=\"agente\" alt=\"\">";
+            }
         }
     }
 
 }
 
-mapaString(4);
+class Agente {
+    constructor(flecha, x, y) {
+        this.flecha = 1;
+        this.x = 0;
+        this.y = 0;
+    }
+
+    disparar(x, y) {
+        this.flecha -= 1;
+        if (matriz[x][y].includes(":(")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    andarNorte() {
+        if (this.y > 0) {
+            this.y -= 1;
+        }
+    }
+
+    andarSul() {
+        if (this.y < d - 1) {
+            this.y += 1;
+        }
+    }
+
+    andarLeste() {
+        if (this.x < d - 1) {
+            this.x += 1;
+        }
+    }
+
+    andarOeste() {
+        if (this.x > 0) {
+            this.x -= 1;
+        }
+    }
+
+    andarAleatorio() {
+        let movimentos = [];
+
+        if (this.y > 0) {
+            movimentos.push(() => this.andarNorte());
+        }
+        if (this.y < d - 1) {
+            movimentos.push(() => this.andarSul());
+        }
+        if (this.x > 0) {
+            movimentos.push(() => this.andarOeste());
+        }
+        if (this.x < d - 1) {
+            movimentos.push(() => this.andarLeste());
+        }
+
+
+        let movimentoEscolhido = movimentos[Math.floor(Math.random() * movimentos.length)];
+        movimentoEscolhido();
+
+    }
+
+    verificaPerigo() {
+        if (matriz[this.x][this.y].includes("O")) {
+            console.log("morto")
+        }
+        if (matriz[this.x][this.y].includes(":(")) {
+            console.log("morto")
+        }
+        if (matriz[this.x][this.y].includes("$")) {
+            console.log("ouro")
+        }
+    }
+}
+
+function moveAgente() {
+    // if (agente1.x > 0) {
+    //     if (agente1.y > 0) {
+    //         //move nas quatro direcoes
+    //     }
+    // } else {
+    //     if (agente1.y > 0) {
+    //         //move para a direita (leste), norte e sul
+    //     } else {
+    //         //move apenas para leste e sul
+    //     }
+    // }
+
+    agente1.andarAleatorio();
+    agente1.verificaPerigo();
+    document.getElementById("agente").remove();
+    document.getElementById(agente1.x + "," + agente1.y).innerHTML += "<img src=\"textures/agente.png\" id=\"agente\" alt=\"\">";
+    console.log(agente1.x, agente1.y);
+}
+
+let matriz = [];
+let d = 4;
+mapaString(d);
+console.log(matriz);
+
+let agente1 = new Agente(1, 0, 0);
+document.getElementById("0,0").innerHTML += "<img src=\"textures/agente.png\" id=\"agente\" alt=\"\">";
+
+document.getElementById("passoButton").addEventListener("click", moveAgente);
+
