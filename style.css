@@ -11,11 +11,12 @@ body {
     background-color: aquamarine;
 } */
 
-#sala {
-    width: 98px;
-    height: 98px;
-    background-color: black;
+.sala {
+    /* width: 98px;
+    height: 98px; */
+    background-color: rgb(106, 106, 106);
     border: solid 2px white;
+    border-radius: 10px;
     color: white;
     display: flex;
     justify-content: center;
