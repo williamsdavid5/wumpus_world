@@ -95,7 +95,7 @@ function mapaStyle(d, matriz) {
                 // document.getElementById(i + "," + j).innerHTML += "<h1>O</h1>";
             }
             if (matriz[i][j].includes(":(")) {
-                document.getElementById(i + "," + j).innerHTML += "<img src=\"textures/wumpus.png\" id=\"wumpus\" alt=\"\">";
+                document.getElementById(i + "," + j).innerHTML += "<img src=\"textures/wumpus.png\" id=\"" + i + "," + j + "_wumpus\" class = \"wumpus\" alt=\"\">";
                 // document.getElementById(i + "," + j).innerHTML += "<h1>:(</h1>";
             }
             if (matriz[i][j].includes("$")) {
@@ -106,6 +106,10 @@ function mapaStyle(d, matriz) {
                 // document.getElementById(i + "," + j).innerHTML += "<h1>$</h1>";
                 document.getElementById(i + "," + j).innerHTML += "<img src=\"textures/agente.png\" id=\"agente\" alt=\"\">";
             }
+            if (matriz[i][j].includes(":(dead")) {
+                // document.getElementById(i + "," + j).innerHTML += "<h1>$</h1>";
+                document.getElementById(i + "," + j).innerHTML += "<img src=\"textures/wumpus_dead.png\" id=\"" + i + "," + j + "_wumpusDead\" class = \"wumpus\" alt=\"\">";
+            }
         }
     }
 
@@ -113,19 +117,39 @@ function mapaStyle(d, matriz) {
 
 class Agente {
     constructor(flecha, x, y) {
-        this.flecha = 1;
-        this.x = 0;
-        this.y = 0;
+        this.flecha = flecha;
+        this.x = x;
+        this.y = y;
         this.ouroColetado = 0;
     }
 
     disparar(x, y) {
-        this.flecha -= 1;
-        if (matriz[x][y].includes(":(")) {
+        this.flecha = this.flecha - 1;
+        if (matriz[x][y].includes(":(") && !matriz[x][y].includes("dead")) {
             return true;
         } else {
             return false;
         }
+    }
+
+    dispararNorte() {
+        let grito = this.disparar(this.x, this.y - 1);
+        return [grito, "n"];
+    }
+
+    dispararSul() {
+        let grito = this.disparar(this.x, this.y + 1);
+        return [grito, "s"];
+    }
+
+    dispararLeste() {
+        let grito = this.disparar(this.x + 1, this.y);
+        return [grito, "l"];
+    }
+
+    dispararOeste() {
+        let grito = this.disparar(this.x - 1, this.y);
+        return [grito, "o"];
     }
 
     andarNorte() {
@@ -174,21 +198,48 @@ class Agente {
 
     }
 
+    dispararAleatorio() {
+        let movimentos = [];
+
+        if (this.y > 0) {
+            movimentos.push(() => this.dispararNorte());
+        }
+        if (this.y < d - 1) {
+            movimentos.push(() => this.dispararSul());
+        }
+        if (this.x > 0) {
+            movimentos.push(() => this.dispararOeste());
+        }
+        if (this.x < d - 1) {
+            movimentos.push(() => this.dispararLeste());
+        }
+
+        let movimentoEscolhido = movimentos[Math.floor(Math.random() * movimentos.length)];
+
+        return movimentoEscolhido();
+
+    }
+
+
     verificaPerigo() {
         if (matriz[this.x][this.y].includes("O") || matriz[this.x][this.y].includes(":(")) {
-            return "morto";
+            if (matriz[this.x][this.y].includes("dead")) {
+                return "wumpusMorto";
+            } else {
+                return "morto";
+            }
+
+
         } else {
             if (this.x == 0 && this.y == 0 && ouroLocal.size == ouro) {
                 return "ganhou";
             } else {
                 if (matriz[this.x][this.y].includes("$")) {
                     this.ouroColetado += 1;
-                    // console.log("ouro: " + this.ouroColetado);
-                    // console.log("ouros existentes: " + ouro);
                     return "ouro";
                 }
                 if (matriz[this.x][this.y].includes("w#")) {
-                    return "fedor";
+                    return ("fedor");
                 }
                 if (matriz[this.x][this.y].includes("p#")) {
                     return "brisa";
@@ -201,52 +252,123 @@ class Agente {
 
 function moveAgente() {
     agente1.andarAleatorio();
+
+    console.log("moveu");
+    console.log(agente1.x, agente1.y);
+
     let sensacao = agente1.verificaPerigo();
+    console.log("sensacao: " + sensacao);
 
     if (sensacao.includes("morto") || sensacao.includes("ganhou")) {
         agente1.ouroColetado = 0;
         agente1.x = 0;
         agente1.y = 0;
-
-        if (sensacao.includes("ganhou")) {
-            ganhou += 1;
-        }
-
-        if (sensacao.includes("morto")) {
-            mortes += 1;
-        }
+        agente1.flecha = flecha;
 
         ouroLocal.forEach(valor => {
             let posicao = JSON.parse(valor);
             document.getElementById(posicao[0] + "," + posicao[1]).innerHTML +=
                 "<img src=\"textures/azedinha.png\" id=\"" + posicao[0] + "," + posicao[1] + "_ouroItem\" alt=\"\">";
-            matriz[posicao[0]][posicao[1]] += "$";
-            console.log("ouro restaurado para a posição:");
-            console.log(matriz);
+
+            matriz[posicao[0]][posicao[1]] = matriz[posicao[0]][posicao[1]] + "$";
+
+        });
+        ouroLocal.clear();
+
+        document.querySelectorAll(".wumpus").forEach(elemento => {
+            elemento.src = "textures/wumpus.png";
+            let id = elemento.id;
+
+            let coordenadas = id.split("_")[0];
+            let [x, y] = coordenadas.split(",").map(Number);
+
+            if (matriz[x][y].includes("dead")) {
+                matriz[x][y] = matriz[x][y].replace("dead", "");
+
+            }
+
         });
 
-        // Só limpa o Set depois de restaurar os ouros
-        ouroLocal.clear();
+        if (sensacao.includes("ganhou")) {
+            ganhou += 1;
+
+        }
+
+        if (sensacao.includes("morto")) {
+            mortes += 1;
+
+        }
+
+        console.log("matriz restaurada");
+        console.log(matriz);
 
     } else {
         if (sensacao.includes("ouro")) {
+
             ouroLocal.add(JSON.stringify([agente1.x, agente1.y]));
-            console.log([...ouroLocal].map(JSON.parse));
 
             matriz[agente1.x][agente1.y] = matriz[agente1.x][agente1.y].replace("$", "");
-            document.getElementById(agente1.x + "," + agente1.y + "_ouroItem").remove();
-            console.log("achou o ouro:");
+            console.log("remove ouro");
+            let ouroItem = document.getElementById(agente1.x + "," + agente1.y + "_ouroItem");
+            if (ouroItem) {
+                ouroItem.remove();
+            }
+
+            console.log("ouro coletado");
             console.log(matriz);
+
+        }
+        if (sensacao.includes("fedor")) {
+            if (agente1.flecha > 0) {
+                let resposta = agente1.dispararAleatorio();
+                let disparo = resposta[0];
+                console.log("disparo: " + disparo);
+
+                let x = agente1.x;
+                let y = agente1.y;
+
+                if (disparo) {
+                    switch (resposta[1]) {
+                        case "n":
+                            y -= 1;
+                            break;
+                        case "s":
+                            y += 1;
+                            break;
+                        case "l":
+                            x += 1;
+                            break;
+                        case "o":
+                            x -= 1;
+                            break;
+                    }
+
+                    matriz[x][y] = matriz[x][y].replace(":(", ":(dead");
+                    console.log("remove wumpus");
+
+                    let wumpusElement = document.getElementById(x + "," + y + "_wumpus");
+                    if (wumpusElement) {
+                        wumpusElement.remove();
+                    }
+
+                    document.getElementById(x + "," + y).innerHTML += "<img src=\"textures/wumpus_dead.png\" id=\"" + x + "," + y + "_wumpusDead\" class = \"wumpus\" alt=\"\">";
+                    console.log("matou");
+                }
+            }
         }
     }
 
+    // Verifica se o elemento "agente" existe antes de tentar removê-lo
+    let agenteElement = document.getElementById("agente");
+    if (agenteElement) {
+        agenteElement.remove();
+    }
 
-    // agente1.verificaPerigo();
-    document.getElementById("agente").remove();
+    // Adiciona o elemento "agente" na nova posição
     document.getElementById(agente1.x + "," + agente1.y).innerHTML += "<img src=\"textures/agente.png\" id=\"agente\" alt=\"\">";
     document.getElementById("mortes").innerHTML = "<p id=\"mortes\">" + mortes + "</p>";
     document.getElementById("ganhou").innerHTML = "<p id=\"mortes\">" + ganhou + "</p>";
-    // console.log(agente1.x, agente1.y);
+    document.getElementById("flechas").innerHTML = "<p id=\"mortes\">" + agente1.flecha + "</p>";
 }
 
 let matriz = [];
@@ -265,9 +387,9 @@ let ouroLocal = new Set();
 mapaString(d);
 console.log(matriz);
 
-let agente1 = new Agente(1, 0, 0);
+let agente1 = new Agente(flecha, 0, 0);
 document.getElementById("0,0").innerHTML += "<img src=\"textures/agente.png\" id=\"agente\" alt=\"\">";
 
 document.getElementById("passoButton").addEventListener("click", moveAgente);
 
-setInterval(moveAgente, 1000);
+setInterval(moveAgente, 1500);
