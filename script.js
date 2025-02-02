@@ -309,10 +309,7 @@ function moveAgente() {
 
             matriz[agente1.x][agente1.y] = matriz[agente1.x][agente1.y].replace("$", "");
             console.log("remove ouro");
-            let ouroItem = document.getElementById(agente1.x + "," + agente1.y + "_ouroItem");
-            if (ouroItem) {
-                ouroItem.remove();
-            }
+            document.getElementById(agente1.x + "," + agente1.y + "_ouroItem").remove();
 
             console.log("ouro coletado");
             console.log(matriz);
@@ -345,11 +342,7 @@ function moveAgente() {
 
                     matriz[x][y] = matriz[x][y].replace(":(", ":(dead");
                     console.log("remove wumpus");
-
-                    let wumpusElement = document.getElementById(x + "," + y + "_wumpus");
-                    if (wumpusElement) {
-                        wumpusElement.remove();
-                    }
+                    document.getElementById(x + "," + y + "_wumpus").remove();
 
                     document.getElementById(x + "," + y).innerHTML += "<img src=\"textures/wumpus_dead.png\" id=\"" + x + "," + y + "_wumpusDead\" class = \"wumpus\" alt=\"\">";
                     console.log("matou");
@@ -357,18 +350,15 @@ function moveAgente() {
             }
         }
     }
+    // agente1.verificaPerigo();
+    console.log("remove agente");
+    document.getElementById("agente").remove();
 
-    // Verifica se o elemento "agente" existe antes de tentar removê-lo
-    let agenteElement = document.getElementById("agente");
-    if (agenteElement) {
-        agenteElement.remove();
-    }
-
-    // Adiciona o elemento "agente" na nova posição
     document.getElementById(agente1.x + "," + agente1.y).innerHTML += "<img src=\"textures/agente.png\" id=\"agente\" alt=\"\">";
     document.getElementById("mortes").innerHTML = "<p id=\"mortes\">" + mortes + "</p>";
     document.getElementById("ganhou").innerHTML = "<p id=\"mortes\">" + ganhou + "</p>";
     document.getElementById("flechas").innerHTML = "<p id=\"mortes\">" + agente1.flecha + "</p>";
+
 }
 
 let matriz = [];
@@ -392,4 +382,4 @@ document.getElementById("0,0").innerHTML += "<img src=\"textures/agente.png\" id
 
 document.getElementById("passoButton").addEventListener("click", moveAgente);
 
-setInterval(moveAgente, 1500);
+setInterval(moveAgente, 100);
