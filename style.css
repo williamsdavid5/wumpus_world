@@ -47,3 +47,12 @@ body {
     border: none;
     border-radius: 10px;
 }
+
+#divPontuacao {
+    display: flex;
+    padding-top: 10px;
+}
+
+#divPontuacao p {
+    margin: 0px 10px;
+}

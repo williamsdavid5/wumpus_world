@@ -1,11 +1,4 @@
 function mapaString(d) {
-    // define a quantidade de elementos, sempre com seus limites
-    let poco = Math.floor(Math.random() * (d - 1)) + 1;
-    let ouro = Math.floor(Math.random() * (d - poco - 1)) + 1;
-    // let wumpus = Math.floor(Math.random() * ouro) + 1;
-    let wumpus = ouro;
-    let flecha = wumpus;
-
     //tags de cada elemento
     let pocoTag = "O";
     let outoTag = "$";
@@ -68,14 +61,15 @@ function marcarPerigo(matriz, x, y, d, perigotag) {
     for (let [dx, dy] of direcoes) {
         let nx = x + dx, ny = y + dy;
         if (nx >= 0 && nx < d && ny >= 0 && ny < d) {
-            if (matriz[nx][ny] == "X") {
+            if (matriz[nx][ny] === "X") {
                 matriz[nx][ny] = perigotag;
-            } else if (matriz[nx][ny] !== "O" && matriz[nx][ny] !== ":(") {
+            } else if (!matriz[nx][ny].includes(perigotag) && matriz[nx][ny] !== "O" && matriz[nx][ny] !== ":(") {
                 matriz[nx][ny] += perigotag;
             }
         }
     }
 }
+
 
 function mapaStyle(d, matriz) {
 
@@ -106,7 +100,7 @@ function mapaStyle(d, matriz) {
             }
             if (matriz[i][j].includes("$")) {
                 // document.getElementById(i + "," + j).innerHTML += "<h1>$</h1>";
-                document.getElementById(i + "," + j).innerHTML += "<img src=\"textures/gold_ingot.png\" id=\"ouroItem\" alt=\"\">";
+                document.getElementById(i + "," + j).innerHTML += "<img src=\"textures/azedinha.png\" id=\"" + i + "," + j + "_ouroItem\" alt=\"\">";
             }
             if (matriz[i][j].includes("Ag")) {
                 // document.getElementById(i + "," + j).innerHTML += "<h1>$</h1>";
@@ -122,6 +116,7 @@ class Agente {
         this.flecha = 1;
         this.x = 0;
         this.y = 0;
+        this.ouroColetado = 0;
     }
 
     disparar(x, y) {
@@ -180,40 +175,93 @@ class Agente {
     }
 
     verificaPerigo() {
-        if (matriz[this.x][this.y].includes("O")) {
-            console.log("morto")
+        if (matriz[this.x][this.y].includes("O") || matriz[this.x][this.y].includes(":(")) {
+            return "morto";
+        } else {
+            if (this.x == 0 && this.y == 0 && ouroLocal.size == ouro) {
+                return "ganhou";
+            } else {
+                if (matriz[this.x][this.y].includes("$")) {
+                    this.ouroColetado += 1;
+                    // console.log("ouro: " + this.ouroColetado);
+                    // console.log("ouros existentes: " + ouro);
+                    return "ouro";
+                }
+                if (matriz[this.x][this.y].includes("w#")) {
+                    return "fedor";
+                }
+                if (matriz[this.x][this.y].includes("p#")) {
+                    return "brisa";
+                }
+            }
         }
-        if (matriz[this.x][this.y].includes(":(")) {
-            console.log("morto")
-        }
-        if (matriz[this.x][this.y].includes("$")) {
-            console.log("ouro")
-        }
+        return "";
     }
 }
 
 function moveAgente() {
-    // if (agente1.x > 0) {
-    //     if (agente1.y > 0) {
-    //         //move nas quatro direcoes
-    //     }
-    // } else {
-    //     if (agente1.y > 0) {
-    //         //move para a direita (leste), norte e sul
-    //     } else {
-    //         //move apenas para leste e sul
-    //     }
-    // }
-
     agente1.andarAleatorio();
-    agente1.verificaPerigo();
+    let sensacao = agente1.verificaPerigo();
+
+    if (sensacao.includes("morto") || sensacao.includes("ganhou")) {
+        agente1.ouroColetado = 0;
+        agente1.x = 0;
+        agente1.y = 0;
+
+        if (sensacao.includes("ganhou")) {
+            ganhou += 1;
+        }
+
+        if (sensacao.includes("morto")) {
+            mortes += 1;
+        }
+
+        ouroLocal.forEach(valor => {
+            let posicao = JSON.parse(valor);
+            document.getElementById(posicao[0] + "," + posicao[1]).innerHTML +=
+                "<img src=\"textures/azedinha.png\" id=\"" + posicao[0] + "," + posicao[1] + "_ouroItem\" alt=\"\">";
+            matriz[posicao[0]][posicao[1]] += "$";
+            console.log("ouro restaurado para a posição:");
+            console.log(matriz);
+        });
+
+        // Só limpa o Set depois de restaurar os ouros
+        ouroLocal.clear();
+
+    } else {
+        if (sensacao.includes("ouro")) {
+            ouroLocal.add(JSON.stringify([agente1.x, agente1.y]));
+            console.log([...ouroLocal].map(JSON.parse));
+
+            matriz[agente1.x][agente1.y] = matriz[agente1.x][agente1.y].replace("$", "");
+            document.getElementById(agente1.x + "," + agente1.y + "_ouroItem").remove();
+            console.log("achou o ouro:");
+            console.log(matriz);
+        }
+    }
+
+
+    // agente1.verificaPerigo();
     document.getElementById("agente").remove();
     document.getElementById(agente1.x + "," + agente1.y).innerHTML += "<img src=\"textures/agente.png\" id=\"agente\" alt=\"\">";
-    console.log(agente1.x, agente1.y);
+    document.getElementById("mortes").innerHTML = "<p id=\"mortes\">" + mortes + "</p>";
+    document.getElementById("ganhou").innerHTML = "<p id=\"mortes\">" + ganhou + "</p>";
+    // console.log(agente1.x, agente1.y);
 }
 
 let matriz = [];
 let d = 4;
+// define a quantidade de elementos, sempre com seus limites
+let poco = Math.floor(Math.random() * (d - 1)) + 1;
+let ouro = Math.floor(Math.random() * (d - poco - 1)) + 1;
+// let wumpus = Math.floor(Math.random() * ouro) + 1;
+let wumpus = ouro;
+let flecha = wumpus;
+
+let mortes = 0;
+let ganhou = 0;
+let ouroLocal = new Set();
+
 mapaString(d);
 console.log(matriz);
 
@@ -222,3 +270,4 @@ document.getElementById("0,0").innerHTML += "<img src=\"textures/agente.png\" id
 
 document.getElementById("passoButton").addEventListener("click", moveAgente);
 
+setInterval(moveAgente, 1000);
