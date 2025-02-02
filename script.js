@@ -305,14 +305,18 @@ function moveAgente() {
     } else {
         if (sensacao.includes("ouro")) {
 
-            ouroLocal.add(JSON.stringify([agente1.x, agente1.y]));
+            try {
+                ouroLocal.add(JSON.stringify([agente1.x, agente1.y]));
+                document.getElementById(agente1.x + "," + agente1.y + "_ouroItem").remove();
+                matriz[agente1.x][agente1.y] = matriz[agente1.x][agente1.y].replace("$", "");
+                console.log("remove ouro");
+                console.log("ouro coletado");
+                console.log(matriz);
+            } catch (erro) {
+                console.log(erro)
+            }
 
-            matriz[agente1.x][agente1.y] = matriz[agente1.x][agente1.y].replace("$", "");
-            console.log("remove ouro");
-            document.getElementById(agente1.x + "," + agente1.y + "_ouroItem").remove();
 
-            console.log("ouro coletado");
-            console.log(matriz);
 
         }
         if (sensacao.includes("fedor")) {
@@ -339,13 +343,16 @@ function moveAgente() {
                             x -= 1;
                             break;
                     }
+                    try {
+                        document.getElementById(x + "," + y + "_wumpus").remove();
+                        matriz[x][y] = matriz[x][y].replace(":(", ":(dead");
+                        console.log("remove wumpus");
 
-                    matriz[x][y] = matriz[x][y].replace(":(", ":(dead");
-                    console.log("remove wumpus");
-                    document.getElementById(x + "," + y + "_wumpus").remove();
-
-                    document.getElementById(x + "," + y).innerHTML += "<img src=\"textures/wumpus_dead.png\" id=\"" + x + "," + y + "_wumpusDead\" class = \"wumpus\" alt=\"\">";
-                    console.log("matou");
+                        document.getElementById(x + "," + y).innerHTML += "<img src=\"textures/wumpus_dead.png\" id=\"" + x + "," + y + "_wumpusDead\" class = \"wumpus\" alt=\"\">";
+                        console.log("matou");
+                    } catch (erro) {
+                        console.log(erro);
+                    }
                 }
             }
         }
