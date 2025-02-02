@@ -389,4 +389,4 @@ document.getElementById("0,0").innerHTML += "<img src=\"textures/agente.png\" id
 
 document.getElementById("passoButton").addEventListener("click", moveAgente);
 
-setInterval(moveAgente, 100);
+setInterval(moveAgente, 300);
