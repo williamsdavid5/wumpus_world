@@ -32,6 +32,10 @@ body {
     height: 90%;
 }
 
+.sala p {
+    font-size: 10px;
+}
+
 #sala #poco {
     background-color: white;
     width: 80px;
