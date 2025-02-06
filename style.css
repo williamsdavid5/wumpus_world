@@ -54,6 +54,7 @@ body {
 
 #divPontuacao {
     display: flex;
+    flex-direction: column;
     padding-top: 10px;
 }
 
