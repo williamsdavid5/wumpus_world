@@ -38,7 +38,7 @@ class Agente {
 
     moverNorte() {
         try {
-            this.sala = mundo[this.x - 1][this.y];
+            this.sala = this.mundo[this.x - 1][this.y];
             this.x -= 1;
 
         } catch (e) {
@@ -48,7 +48,7 @@ class Agente {
 
     moverSul() {
         try {
-            this.sala = mundo[this.x + 1][this.y];
+            this.sala = this.mundo[this.x + 1][this.y];
             this.x += 1;
 
         } catch (e) {
@@ -58,7 +58,7 @@ class Agente {
 
     moverLeste() {
         try {
-            this.sala = mundo[this.x][this.y + 1];
+            this.sala = this.mundo[this.x][this.y + 1];
             this.y += 1;
 
         } catch (e) {
@@ -68,7 +68,7 @@ class Agente {
 
     moverOeste() {
         try {
-            this.sala = mundo[this.x][this.y - 1];
+            this.sala = this.mundo[this.x][this.y - 1];
             this.y -= 1;
 
         } catch (e) {
@@ -94,12 +94,6 @@ class Mundo {
         this.wumpus = this.ouro;
         // this.flecha = this.wumpus;
         this.posicoesOuro = [];
-
-        // console.log("Buraco:", buraco);
-        // console.log("Ouro:", ouro);
-        // console.log("Wumpus:", wumpus);
-        // console.log("Flecha:", flecha);
-        // console.log("Posições do Ouro:", posicoesOuro);
 
         this.adicionaEntidades(d);
         let agente = null;
@@ -158,67 +152,6 @@ class Mundo {
     }
 }
 
-// function criarMundo(d, mundo) {
-//     for (let x = 0; x < d; x++) {
-//         let temp = [];
-//         for (let y = 0; y < d; y++) {
-//             temp.push(new Sala(x, y));
-//         }
-//         mundo.push(temp);
-//     }
-// }
-
-// function adicionaEntidades(mundo, d, qtdWumpus, qtdBuracos, qtdOuro) {
-//     let totalWumpus = 0;
-//     let totalBuracos = 0;
-//     let totalOuro = 0;
-
-//     while (totalWumpus < qtdWumpus || totalBuracos < qtdBuracos || totalOuro < qtdOuro) {
-//         let x, y;
-
-//         // Garante que a posição (0,0) nunca será escolhida
-//         do {
-//             x = Math.floor(Math.random() * d);
-//             y = Math.floor(Math.random() * d);
-//         } while (x === 0 && y === 0);
-
-//         let sala = mundo[x][y];
-
-//         if (!sala.wumpus && !sala.buraco && totalWumpus < qtdWumpus && Math.random() < 0.5) {
-//             sala.wumpus = new Wumpus();
-//             adicionarFedor(mundo, x, y, d);
-//             totalWumpus++;
-//         } else if (!sala.wumpus && !sala.buraco && totalBuracos < qtdBuracos) {
-//             sala.buraco = true;
-//             adicionarBrisa(mundo, x, y, d);
-//             totalBuracos++;
-//         } else if (!sala.buraco && !sala.ouro && totalOuro < qtdOuro) {
-//             sala.ouro = true;
-//             totalOuro++;
-//         }
-//     }
-// }
-
-// function adicionarFedor(mundo, x, y, d) {
-//     let direcoes = [[0, 1], [0, -1], [1, 0], [-1, 0]];
-//     direcoes.forEach(([dx, dy]) => {
-//         let nx = x + dx, ny = y + dy;
-//         if (nx >= 0 && nx < d && ny >= 0 && ny < d) {
-//             mundo[nx][ny].fedor = true;
-//         }
-//     });
-// }
-
-// function adicionarBrisa(mundo, x, y, d) {
-//     let direcoes = [[0, 1], [0, -1], [1, 0], [-1, 0]];
-//     direcoes.forEach(([dx, dy]) => {
-//         let nx = x + dx, ny = y + dy;
-//         if (nx >= 0 && nx < d && ny >= 0 && ny < d) {
-//             mundo[nx][ny].brisa = true;
-//         }
-//     });
-// }
-
 function renderizarMapa(mapaTamanho, d, mundo) {
     let mapa = document.getElementById("mapa");
     mapa.style.width = d * mapaTamanho + 'px';
@@ -234,9 +167,11 @@ function renderizarMapa(mapaTamanho, d, mundo) {
             salaDiv.id = `${x},${y}`;
             salaDiv.className = "sala";
 
-            // if (mundo.agente != null) {
-            //     document.getElementById(mundo.agente.x + "," + mundo.agente.y).innerHTML += "<img src=\"textures/agente.png\" id=\"agente\" alt=\"\">";
-            // }
+            if (mundo.agente != null && mundo.agente.x == x && mundo.agente.y == y) {
+                salaDiv.innerHTML += "<img src=\"textures/agente.png\" id=\"agente\" alt=\"\">";
+                document.getElementById("mortesPontuacao").textContent = "Mortes: " + mundo.agente.mortes;
+                document.getElementById("vitoriasPontuacao").textContent = "Ganhou: " + mundo.agente.vitorias;
+            }
 
             if (mundo.mundo[x][y].buraco) {
                 salaDiv.innerHTML += "<img src=\"textures/role.png\" id=\"buraco\" alt=\"\">";
@@ -254,24 +189,10 @@ function renderizarMapa(mapaTamanho, d, mundo) {
                 salaDiv.innerHTML += "<img src=\"textures/azedinha.png\" id=\"" + x + "," + y + "_ouroItem\" alt=\"\">";
             }
 
-
-
             mapa.appendChild(salaDiv);
         }
     }
 }
-
-// function inserirAgenteNoMundo() {
-
-//     let novoAgente = new Agente(flecha, mundo);
-
-//     document.getElementById(0 + "," + 0).innerHTML += "<img src=\"textures/agente.png\" id=\"agente\" alt=\"\">";
-//     document.getElementById("mortesPontuacao").textContent = "Mortes: " + novoAgente.mortes;
-//     document.getElementById("vitoriasPontuacao").textContent = "Vitorias: " + novoAgente.vitorias;
-//     document.getElementById("flechasNumero").textContent = "Flechas: " + novoAgente.flechas;
-
-//     return novoAgente;
-// }
 
 function restaurarMundo(mundo, posicoesOuro) {
     posicoesOuro.forEach(([x, y]) => {
@@ -352,27 +273,6 @@ let mundo = new Mundo(d);
 mundo.agente = new Agente(mundo.wumpus, mundo.mundo);
 renderizarMapa(mapaTamanhoPixels, d, mundo);
 
-// let mundo = [];
-// let d = 6;
-
-// let buraco = Math.floor(Math.random() * (d - 1)) + 1;
-// let ouro = Math.floor(Math.random() * (d - buraco - 1)) + 1;
-// let wumpus = ouro;
-// let flecha = wumpus;
-
-// let posicoesOuro = [];
-
-// criarMundo(d, mundo);
-// adicionaEntidades(mundo, d, wumpus, buraco, ouro);
-
-// renderizarMapa(100, d);
-
-// let agente = inserirAgenteNoMundo(mundo, flecha);
-
-// rodarGameAleatorio(agente);
-
-
-
-// setInterval(() => {
-//     rodarGameAleatorio(agente, mundo, posicoesOuro, ouro);
-// }, 500);
+setInterval(() => {
+    rodarGameAleatorio(mundo.agente, mundo.mundo, mundo.posicoesOuro, mundo.ouro);
+}, 500);
