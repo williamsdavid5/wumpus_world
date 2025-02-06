@@ -150,6 +150,12 @@ class Mundo {
 
         this.adicionaEntidades(d);
         let agente = null;
+
+        this.flechasDisparadas = 0;
+        this.wumpusMortos = 0;
+        this.ouroColetado = 0;
+        this.mortesPorWumpus = 0;
+        this.mortesPorBuraco = 0;
     }
 
 
@@ -212,6 +218,13 @@ function renderizarMapa(mapaTamanho, d, mundo) {
     mapa.style.display = 'grid';
     mapa.style.gridTemplateColumns = 'repeat(' + d + ', ' + mapaTamanho + 'px)';
     mapa.style.gridTemplateRows = 'repeat(' + d + ', ' + mapaTamanho + 'px)';
+
+    document.getElementById("flechasNumero").textContent = "Flechas disparadas: " + mundo.flechasDisparadas;
+    document.getElementById("Wumpus Mortos").textContent = "Wumpus mortos: " + mundo.wumpusMortos;
+    document.getElementById("Ouro Coletado").textContent = "Ouro coletado: " + mundo.ouroColetado;
+    document.getElementById("Flechas disparadas").textContent = "Flechas disparadas: " + mundo.flechasDisparadas;
+    document.getElementById("mortes por wumpus").textContent = "Mortes por wumpus: " + mundo.mortesPorWumpus;
+    document.getElementById("mortes por buraco").textContent = "Mortes por buraco: " + mundo.mortesPorBuraco;
 
     for (let x = 0; x < d; x++) {
         for (let y = 0; y < d; y++) {
@@ -299,22 +312,28 @@ function rodarGameAleatorio(mundo) {
             agente.mortes += 1;
             agente.ouro = 0;
             agente.flechas = mundo.wumpus;
+            mundo.mortesPorWumpus += 1;
             document.getElementById("mortesPontuacao").textContent = "Mortes: " + agente.mortes;
             document.getElementById("flechasNumero").textContent = "Flechas: " + agente.flechas;
+            document.getElementById("mortes por wumpus").textContent = "Mortes por wumpus: " + mundo.mortesPorWumpus;
             restaurarMundo(mundo.mundo, posicoesOuro, posicoesWumpus);
         }
     }
 
+    // morreu para um buraco
     if (mundo.mundo[agente.x][agente.y].buraco) {
         agente.x = agente.y = 0;
         agente.mortes += 1;
         agente.ouro = 0;
         agente.flechas = mundo.wumpus;
+        mundo.mortesPorBuraco += 1;
         document.getElementById("mortesPontuacao").textContent = "Mortes: " + agente.mortes;
         document.getElementById("flechasNumero").textContent = "Flechas: " + agente.flechas;
+        document.getElementById("mortes por buraco").textContent = "Mortes por buraco: " + mundo.mortesPorBuraco;
         restaurarMundo(mundo.mundo, posicoesOuro, posicoesWumpus);
     }
 
+    //achou ouro
     if (mundo.mundo[agente.x][agente.y].ouro) {
         posicoesOuro.push([agente.x, agente.y]);
         mundo.mundo[agente.x][agente.y].ouro = false;
@@ -322,6 +341,7 @@ function rodarGameAleatorio(mundo) {
         document.getElementById(agente.x + "," + agente.y + "_ouroItem").remove();
     }
 
+    //sentiu fedor, disparou
     if (mundo.mundo[agente.x][agente.y].fedor && agente.flechas > 0) {
 
         let disparos = [
@@ -331,21 +351,28 @@ function rodarGameAleatorio(mundo) {
             () => agente.dispararOeste()
         ];
 
+        mundo.flechasDisparadas += 1;
         let morreu = disparos[Math.floor(Math.random() * disparos.length)]();
 
         document.getElementById("flechasNumero").textContent = "Flechas: " + agente.flechas;
+        document.getElementById("Flechas disparadas").textContent = "Flechas disparadas: " + mundo.flechasDisparadas;
 
         if (morreu[0]) {
             // console.log(morreu[1], morreu[2]);
             posicoesWumpus.push([morreu[1], morreu[2]]);
             document.getElementById(morreu[1] + "," + morreu[2] + "_wumpus").src = "textures/wumpus_dead.png";
+            mundo.wumpusMortos += 1;
+            document.getElementById("Wumpus Mortos").textContent = "Wumpus mortos: " + mundo.wumpusMortos;
         }
     }
 
+    // chegou em 0,0 com ouro
     if (agente.x == 0 && agente.y == 0 && agente.ouro == ouro) {
         agente.vitorias += 1;
         agente.ouro = 0;
         agente.flechas = mundo.wumpus;
+        mundo.ouroColetado += 1;
+        document.getElementById("Ouro Coletado").textContent = "Ouro coletado: " + mundo.ouroColetado;
         document.getElementById("vitoriasPontuacao").textContent = "Vitorias: " + agente.vitorias;
         document.getElementById("flechasNumero").textContent = "Flechas: " + agente.flechas;
         restaurarMundo(mundo.mundo, posicoesOuro, posicoesWumpus);
