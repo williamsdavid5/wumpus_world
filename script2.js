@@ -400,8 +400,8 @@ function rodarGameAleatorio(mundo) {
 
 }
 
-let d = 5;
-let mapaTamanhoPixels = 100;
+let d = 4;
+let mapaTamanhoPixels = 150;
 
 let mundo = new Mundo(d);
 mundo.agente = new Agente(mundo.wumpus, mundo.mundo);
