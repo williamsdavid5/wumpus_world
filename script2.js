@@ -234,7 +234,7 @@ function renderizarMapa(mapaTamanho, d, mundo) {
             salaDiv.className = "sala";
 
             if (mundo.agente != null && mundo.agente.x == x && mundo.agente.y == y) {
-                salaDiv.innerHTML += "<img src=\"textures/agente.png\" id=\"agente\" alt=\"\">";
+                salaDiv.innerHTML += "<img src=\"textures/linoAgenteArmado.png\" id=\"agente\" alt=\"\">";
                 document.getElementById("mortesPontuacao").textContent = "Mortes: " + mundo.agente.mortes;
                 document.getElementById("vitoriasPontuacao").textContent = "Ganhou: " + mundo.agente.vitorias;
                 document.getElementById("flechasNumero").textContent = "FLechas: " + mundo.agente.flechas;
@@ -244,7 +244,7 @@ function renderizarMapa(mapaTamanho, d, mundo) {
                 salaDiv.innerHTML += "<img src=\"textures/role.png\" id=\"buraco\" alt=\"\">";
             }
             if (mundo.mundo[x][y].wumpus != null) {
-                salaDiv.innerHTML += "<img src=\"textures/wumpus.png\" id=\"" + x + "," + y + "_wumpus\" class=\"wumpus\" alt=\"\">";
+                salaDiv.innerHTML += "<img src=\"textures/canvaWumpusVivo.png\" id=\"" + x + "," + y + "_wumpus\" class=\"wumpus\" alt=\"\">";
             }
             // if (mundo.mundo[x][y].fedor) {
             //     salaDiv.innerHTML += "<p>fedor</p>";
@@ -270,7 +270,7 @@ function restaurarMundo(mundo, posicoesOuro, posicoesWumpus) {
     if (posicoesWumpus != undefined) {
         posicoesWumpus.forEach(([x, y]) => {
             mundo[x][y].wumpus.vivo = true;
-            document.getElementById(x + "," + y + "_wumpus").src = "textures/wumpus.png";
+            document.getElementById(x + "," + y + "_wumpus").src = "textures/canvaWumpusVivo.png";
         });
     }
 
@@ -360,7 +360,7 @@ function rodarGameAleatorio(mundo) {
         if (morreu[0]) {
             // console.log(morreu[1], morreu[2]);
             posicoesWumpus.push([morreu[1], morreu[2]]);
-            document.getElementById(morreu[1] + "," + morreu[2] + "_wumpus").src = "textures/wumpus_dead.png";
+            document.getElementById(morreu[1] + "," + morreu[2] + "_wumpus").src = "textures/canvaWumpusMorto.png";
             mundo.wumpusMortos += 1;
             document.getElementById("Wumpus Mortos").textContent = "Wumpus mortos: " + mundo.wumpusMortos;
         }
@@ -378,12 +378,18 @@ function rodarGameAleatorio(mundo) {
         restaurarMundo(mundo.mundo, posicoesOuro, posicoesWumpus);
     }
 
-    document.getElementById(agente.x + "," + agente.y).innerHTML += "<img src=\"textures/agente.png\" id=\"agente\" alt=\"\">";
+    if (agente.flechas > 0) {
+        document.getElementById(agente.x + "," + agente.y).innerHTML += "<img src=\"textures/linoAgenteArmado.png\" id=\"agente\" alt=\"\">";
+    } else {
+        document.getElementById(agente.x + "," + agente.y).innerHTML += "<img src=\"textures/linoAgente.png\" id=\"agente\" alt=\"\">";
+    }
+
+
 
 }
 
 let d = 4;
-let mapaTamanhoPixels = 100;
+let mapaTamanhoPixels = 120;
 
 let mundo = new Mundo(d);
 mundo.agente = new Agente(mundo.wumpus, mundo.mundo);
@@ -391,4 +397,4 @@ renderizarMapa(mapaTamanhoPixels, d, mundo);
 
 setInterval(() => {
     rodarGameAleatorio(mundo);
-}, 500);
+}, 1000);
