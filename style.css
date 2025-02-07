@@ -4,6 +4,16 @@ body {
     color: white;
 }
 
+@font-face {
+    font-family: 'edosz';
+    src: url('fonts/edosz.ttf') format('truetype');
+    font-weight: normal;
+    /* ou bold, conforme necessário */
+    font-style: normal;
+    /* ou italic, conforme necessário */
+}
+
+
 #saida {
     font-weight: bold;
     font-size: xx-large;
@@ -52,21 +62,101 @@ body {
     border-radius: 200px;
 }
 
-#passoButton {
-    margin-top: 10px;
-    background-color: black;
-    color: white;
-    padding: 10px;
-    border: none;
-    border-radius: 10px;
+#divPontuacao p {
+    margin: 0px 10px;
+}
+
+#interfaceBack {
+    width: 800px;
+    position: absolute;
+}
+
+#interface {
+    height: 160px;
+    font-family: 'edosz', sans-serif;
+}
+
+#interface h1,
+#interface p {}
+
+.vitoriasPlacar {
+    position: absolute;
+    padding-left: 20px;
+    /* top: 3vh;
+    left: 4vw; */
+    font-size: clamp(30px, 5vw, 60px);
+    width: 90px;
+}
+
+.mortesPlacar {
+    position: absolute;
+    padding-left: 280px;
+    /* top: 3vh;
+    left: 4vw; */
+    font-size: clamp(30px, 5vw, 60px);
+    width: 90px;
+
+}
+
+.mortesPlacar h1,
+.vitoriasPlacar h1 {
+    font-size: 70px;
+    text-align: center;
+}
+
+#municao {
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    /* top: 3vh;
+    left: 4vw; */
+
+}
+
+.municaoPlacar {
+    position: absolute;
+    padding-left: 382px;
+    padding-top: 18px;
+    font-size: clamp(30px, 5vw, 60px);
+    text-align: center;
+    font-size: 17px;
+    width: 70px;
+}
+
+#flechasNumero {
+    /* top: 3vh;
+    left: 4vw; */
+    font-size: clamp(30px, 5vw, 60px);
+    text-align: center;
+    font-size: 70px;
+    margin: 0;
+}
+
+#informacoes {
+    position: absolute;
+    width: 300px;
+    height: auto;
+    padding-left: 480px;
+    padding-top: 20px;
+}
+
+#informacoes p {
+    margin: 0;
+    padding: 0;
+    font-size: 15px;
 }
 
 #divPontuacao {
-    display: flex;
-    flex-direction: column;
-    padding-top: 10px;
+    position: absolute;
+    padding-left: 550px;
+    padding-top: 120px;
+    font-size: clamp(30px, 5vw, 60px);
+    text-align: center;
+    font-size: 17px;
+    width: 70px;
+    color: black;
 }
 
-#divPontuacao p {
-    margin: 0px 10px;
+#pontuacao {
+    font-size: 30px;
+    margin: 0;
+    padding: 0;
 }
