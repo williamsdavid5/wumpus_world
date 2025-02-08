@@ -173,8 +173,45 @@ body {
     text-decoration: none;
     border: none;
     margin-left: 635px;
+    /* animation: pulse 1.5s infinite; */
 }
 
 #playPause:hover {
     transform: scale(1.05);
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+#velocidade {
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    background-image: url(textures/interface/relogio.png);
+    background-size: cover;
+    border: none;
+    margin-left: 730px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#velocidadeLink {
+    text-decoration: none;
+    font-family: 'bebas';
+    color: black;
+    font-size: 50px;
+    padding-top: 40px;
+    text-align: center;
 }

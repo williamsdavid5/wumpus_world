@@ -400,19 +400,39 @@ function rodarGameAleatorio(mundo) {
 
 }
 
+function agenteClique() {
+    rodarGameAleatorio(mundo)
+}
+
 document.getElementById("playPause").addEventListener("click", () => {
     if (rodando) {
         clearInterval(internal);
         internal = null;
         document.getElementById("playPause").style.backgroundImage = "url(textures/interface/playButton.png)";
+
+        document.getElementById("mapa").addEventListener("click", agenteClique);
     } else {
         internal = setInterval(() => {
             rodarGameAleatorio(mundo);
-        }, 500);
+        }, velocidades[indiceVelocidade]);
         document.getElementById("playPause").style.backgroundImage = "url(textures/interface/pauseButton.png)";
+        document.getElementById("mapa").removeEventListener("click", agenteClique);
     }
     rodando = !rodando;
 });
+
+document.getElementById("velocidadeLink").addEventListener("click", () => {
+    indiceVelocidade = (indiceVelocidade + 1) % velocidades.length;
+
+    clearInterval(internal);
+    internal = null;
+
+    internal = setInterval(() => {
+        rodarGameAleatorio(mundo);
+    }, velocidades[indiceVelocidade]);
+
+    document.getElementById("velocidadeLink").textContent = (velocidades[indiceVelocidade] / 1000).toFixed(1);
+})
 
 let d = 4;
 let mapaTamanhoPixels = 100;
@@ -421,10 +441,16 @@ let mundo = new Mundo(d);
 mundo.agente = new Agente(mundo.wumpus, mundo.mundo);
 renderizarMapa(mapaTamanhoPixels, d, mundo);
 
+let velocidades = [100, 500, 1000, 1500, 2000];
+let indiceVelocidade = 2;
+document.getElementById("velocidadeLink").textContent = (velocidades[indiceVelocidade] / 1000).toFixed(1);
+
 let internal = setInterval(() => {
     rodarGameAleatorio(mundo);
-}, 500);
+}, velocidades[indiceVelocidade]);
 let rodando = true;
+
+
 
 
 
