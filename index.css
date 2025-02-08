@@ -13,7 +13,7 @@ body {
 #menu {
     width: 700px;
     height: 500px;
-    /* background-image: url(textures/interface/prancheta.png); */
+    background-image: url(textures/interface/menuBabkground.png);
     background-size: contain;
     /* background-position: 10% 50%; */
     background-repeat: no-repeat;
@@ -21,7 +21,7 @@ body {
     align-items: center;
     justify-content: center;
     flex-direction: column;
-    border: solid 2px white;
+    /* border: solid 2px white; */
     /* background-color: red; */
     padding: 20px;
 }
