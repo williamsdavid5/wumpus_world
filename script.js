@@ -426,8 +426,8 @@ document.getElementById("velocidadeLink").addEventListener("click", () => {
     document.getElementById("velocidadeLink").textContent = (velocidades[indiceVelocidade] / 1000).toFixed(1);
 })
 
-let d = 5;
-let mapaTamanhoPixels = 100;
+let d = localStorage.getItem("dimensaoMapa");
+let mapaTamanhoPixels = localStorage.getItem("dimensaoSala");
 
 let mundo = new Mundo(d);
 mundo.agente = new Agente(mundo.wumpus, mundo.mundo);

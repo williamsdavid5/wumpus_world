@@ -4,45 +4,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wumpus world</title>
+    <title>Wumpus World</title>
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="global.css">
+    <link rel="stylesheet" href="index.css">
 </head>
 
 <body>
-    <div id="interface">
-        <img src="textures/interface/interfaceBack.png" alt="" id="interfaceBack">
-        <div class="mortesPlacar">
-            <h1 id="mortesPontuacao"></h1>
+    <div id="menu">
+        <div id="menuOpcoes">
+            <div id="esquerda">
+                <img src="textures/interface/linoAgenteArmadoMenu.png" alt="">
+                <p>Escolha do nível do agente</p>
+                <select name="" id="opcoesDeAgente">
+                    <option value="agente1">Agente1</option>
+                </select>
+            </div>
+            <div id="direita">
+                <p>Tamanho da sala (pixels)</p>
+                <div id="backgroundSalaMenuDiv">
+                    <img src="textures/interface/backgroundSalaMenu.png" alt="" id="backgroundSalaMenu">
+                </div>
+                <input type="range" name="" id="inputTamanhoSala" min="50" max="200" step="1" value="100">
+                <p id="tamanhoSalaString"></p>
+            </div>
         </div>
-        <div class="vitoriasPlacar">
-            <h1 id="vitoriasPontuacao"></h1>
+        <div id="dimensaoDiv">
+            <p>Dimensão do mapa:</p>
+            <input type="number" name="" id="dimensaoMapa" min="3" value="4">
         </div>
-        <div class="municaoPlacar">
-            <p id="municao">MUNIÇÃO</p>
-            <p id="flechasNumero"></p>
-        </div>
-        <div id="divPontuacao">
-            <p>Pontucação</p>
-            <p id="pontuacao"></p>
-        </div>
-        <div id="informacoes">
-            <p id="mortes por wumpus">Mortes por wumpus:</p>
-            <p id="mortes por buraco">Mortes por buraco:</p>
-            <p id="Wumpus Mortos">Wumpus mortos: </p>
-            <p id="Flechas disparadas">Tiros disparados:</p>
-            <p id="Ouro Coletado">Ouro Coletado:</p>
-        </div>
-        <a href="#" id="playPause"></a>
-        <div id="velocidade">
-            <a href="#" id="velocidadeLink"></a>
-        </div>
-    </div>
-    <div id="mapa"></div>
-    <div>
+
+        <a href="#" id="botaoIniciar">Iniciar</a>
     </div>
 
-    <script src="script.js"></script>
+    <script src="index.js"></script>
 </body>
 
 </html>

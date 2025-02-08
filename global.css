@@ -1,0 +1,23 @@
+body {
+    font-family: sans-serif;
+    background-color: black;
+    color: white;
+}
+
+@font-face {
+    font-family: 'edosz';
+    src: url('fonts/edosz.ttf') format('truetype');
+    font-weight: normal;
+    /* ou bold, conforme necessário */
+    font-style: normal;
+    /* ou italic, conforme necessário */
+}
+
+@font-face {
+    font-family: 'bebas';
+    src: url('fonts/BebasNeue-Regular.otf') format('truetype');
+    font-weight: normal;
+    /* ou bold, conforme necessário */
+    font-style: normal;
+    /* ou italic, conforme necessário */
+}
