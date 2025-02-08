@@ -161,3 +161,20 @@ body {
     margin: 0;
     padding: 0;
 }
+
+#playPause {
+    display: inline-block;
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    background-image: url(textures/interface/pauseButton.png);
+    /* background-image: url(textures/interface/playButton.png); */
+    background-size: cover;
+    text-decoration: none;
+    border: none;
+    margin-left: 635px;
+}
+
+#playPause:hover {
+    transform: scale(1.05);
+}

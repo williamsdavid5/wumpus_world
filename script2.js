@@ -400,13 +400,31 @@ function rodarGameAleatorio(mundo) {
 
 }
 
+document.getElementById("playPause").addEventListener("click", () => {
+    if (rodando) {
+        clearInterval(internal);
+        internal = null;
+        document.getElementById("playPause").style.backgroundImage = "url(textures/interface/playButton.png)";
+    } else {
+        internal = setInterval(() => {
+            rodarGameAleatorio(mundo);
+        }, 500);
+        document.getElementById("playPause").style.backgroundImage = "url(textures/interface/pauseButton.png)";
+    }
+    rodando = !rodando;
+});
+
 let d = 4;
-let mapaTamanhoPixels = 150;
+let mapaTamanhoPixels = 100;
 
 let mundo = new Mundo(d);
 mundo.agente = new Agente(mundo.wumpus, mundo.mundo);
 renderizarMapa(mapaTamanhoPixels, d, mundo);
 
-setInterval(() => {
+let internal = setInterval(() => {
     rodarGameAleatorio(mundo);
 }, 500);
+let rodando = true;
+
+
+
