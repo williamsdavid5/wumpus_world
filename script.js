@@ -319,6 +319,8 @@ function rodarGameAleatorio(mundo) {
             agente.mortes += 1;
             agente.ouro = 0;
             agente.pontuacao -= 1000;
+            console.log("Pontucão do agente: " + agente.pontuacao);
+            agente.pontuacao = 0;
             agente.flechas = mundo.wumpus;
             mundo.mortesPorWumpus += 1;
             document.getElementById("mortesPontuacao").textContent = agente.mortes;
@@ -334,6 +336,8 @@ function rodarGameAleatorio(mundo) {
         agente.x = agente.y = 0;
         agente.mortes += 1;
         agente.pontuacao -= 1000;
+        console.log("Pontucão do agente: " + agente.pontuacao);
+        agente.pontuacao = 0;
         agente.ouro = 0;
         agente.flechas = mundo.wumpus;
         mundo.mortesPorBuraco += 1;
@@ -385,6 +389,8 @@ function rodarGameAleatorio(mundo) {
         agente.vitorias += 1;
         agente.pontuacao += 1000;
         agente.ouro = 0;
+        console.log("Pontucão do agente: " + agente.pontuacao);
+        agente.pontuacao = 0;
         agente.flechas = mundo.wumpus;
         mundo.ouroColetado += 1;
         document.getElementById("Ouro Coletado").textContent = "Ouro coletado: " + mundo.ouroColetado;
