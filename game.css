@@ -1,3 +1,13 @@
+body {
+    display: flex;
+    font-family: 'edosz', sans-serif;
+}
+
+p {
+    margin: 0;
+    padding: 0;
+}
+
 #saida {
     font-weight: bold;
     font-size: xx-large;
@@ -6,7 +16,25 @@
 #mapa {
     /* background-color: white; */
     /* background-image: url(textures/cobbled_deepslate.png); */
+    margin-top: 165px;
     padding: 10px;
+}
+
+#divLogPontuacao {
+    /* padding: 10px; */
+    margin-top: 170px;
+    margin-left: 20px;
+    text-align: center;
+}
+
+#logPontuacao {
+    width: 310px;
+    background-color: black;
+    color: rgb(209, 209, 209);
+    border: solid 2px rgb(171, 171, 171);
+    margin-top: 10px;
+    font-family: 'edosz';
+    font-size: medium;
 }
 
 .sala {
@@ -51,7 +79,6 @@
 
 #interface {
     height: 160px;
-    font-family: 'edosz', sans-serif;
 }
 
 .vitoriasPlacar {
@@ -149,11 +176,27 @@
     text-decoration: none;
     border: none;
     margin-left: 635px;
+    margin-top: -5px;
     /* animation: pulse 1.5s infinite; */
 }
 
-#playPause:hover {
+#playPause:hover,
+#atualizarMundo:hover {
     transform: scale(1.05);
+}
+
+#atualizarMundo {
+    display: inline-block;
+    position: absolute;
+    width: 90px;
+    height: 90px;
+    background-image: url(textures/interface/atualizarMundo.png);
+    /* background-image: url(textures/interface/playButton.png); */
+    background-size: cover;
+    text-decoration: none;
+    border: none;
+    margin-left: 650px;
+    margin-top: 100px;
 }
 
 @keyframes pulse {

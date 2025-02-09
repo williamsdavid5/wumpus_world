@@ -143,6 +143,7 @@ class Mundo {
 
         this.adicionaEntidades(d);
         let agente = null;
+        this.agentesNumero = 0;
 
         this.flechasDisparadas = 0;
         this.wumpusMortos = 0;
@@ -319,6 +320,11 @@ function rodarGameAleatorio(mundo) {
             agente.mortes += 1;
             agente.ouro = 0;
             agente.pontuacao -= 1000;
+
+            mundo.agentesNumero += 1;
+            document.getElementById("logPontuacao").value = "Agente " + mundo.agentesNumero + ": " + agente.pontuacao + ", morto por wumpus" + "\n" + document.getElementById("logPontuacao").value;
+
+
             console.log("Pontucão do agente: " + agente.pontuacao);
             agente.pontuacao = 0;
             agente.flechas = mundo.wumpus;
@@ -336,6 +342,10 @@ function rodarGameAleatorio(mundo) {
         agente.x = agente.y = 0;
         agente.mortes += 1;
         agente.pontuacao -= 1000;
+
+        mundo.agentesNumero += 1;
+        document.getElementById("logPontuacao").value = "Agente " + mundo.agentesNumero + ": " + agente.pontuacao + ", morto por buraco" + "\n" + document.getElementById("logPontuacao").value;
+
         console.log("Pontucão do agente: " + agente.pontuacao);
         agente.pontuacao = 0;
         agente.ouro = 0;
@@ -389,6 +399,10 @@ function rodarGameAleatorio(mundo) {
         agente.vitorias += 1;
         agente.pontuacao += 1000;
         agente.ouro = 0;
+
+        mundo.agentesNumero += 1;
+        document.getElementById("logPontuacao").value = "Agente " + mundo.agentesNumero + ": " + agente.pontuacao + ", VITÓRIA!!!!!!!!!!!!!!!!" + "\n" + document.getElementById("logPontuacao").value;
+
         console.log("Pontucão do agente: " + agente.pontuacao);
         agente.pontuacao = 0;
         agente.flechas = mundo.wumpus;
@@ -450,6 +464,8 @@ let mapaTamanhoPixels = localStorage.getItem("dimensaoSala");
 let mundo = new Mundo(d);
 mundo.agente = new Agente(mundo.wumpus, mundo.mundo);
 renderizarMapa(mapaTamanhoPixels, d, mundo);
+let auturaMapa = document.getElementById("mapa").offsetHeight;
+document.getElementById("logPontuacao").style.height = auturaMapa - 70 + "px";
 
 let velocidades = [2000, 1500, 1000, 500, 100];
 let indiceVelocidade = 2;
