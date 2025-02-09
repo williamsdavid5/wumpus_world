@@ -15,6 +15,7 @@
 <body>
     <div id="menu">
         <img src="textures/interface/gameLogo.png" alt="" id="gameLogo">
+        <img src="textures/interface/canvaWumpusInterface.png" id="canvaLogo">
         <div id="menuOpcoes">
             <div id="esquerda">
                 <img src="textures/interface/linoAgenteArmadoMenu.png" alt="">
@@ -28,7 +29,7 @@
                 <div id="backgroundSalaMenuDiv">
                     <img src="textures/interface/backgroundSalaMenu.png" alt="" id="backgroundSalaMenu">
                 </div>
-                <input type="range" name="" id="inputTamanhoSala" min="50" max="200" step="1" value="100">
+                <input type="range" name="" id="inputTamanhoSala" min="50" max="200" step="1">
                 <p id="tamanhoSalaString"></p>
             </div>
         </div>
@@ -36,9 +37,12 @@
             <p>Dimensão do mapa:</p>
             <input type="number" name="" id="dimensaoMapa" min="3" value="4">
         </div>
+        <div id="checkaSensacoes">
+            <input type="checkbox" name="" id="mostrarSensacoes">
+            <p>Mostrar sensações</p>
+        </div>
         <a href="#" id="botaoIniciar">Iniciar</a>
     </div>
-
     <script src="index.js"></script>
 </body>
 

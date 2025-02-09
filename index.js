@@ -13,10 +13,14 @@ tamanhoSala.addEventListener("input", function () {
 });
 
 const dimensaoMapa = document.getElementById("dimensaoMapa");
+const mostrarSensacoes = document.getElementById("mostrarSensacoes");
 
 document.getElementById("botaoIniciar").addEventListener("click", function () {
     localStorage.setItem("dimensaoSala", tamanhoSala.value);
     localStorage.setItem("dimensaoMapa", dimensaoMapa.value);
+    localStorage.setItem("sensacoes", mostrarSensacoes.checked);
 
     window.location.href = "game.html";
 });
+
+console.log(mostrarSensacoes.value);

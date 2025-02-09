@@ -235,18 +235,30 @@ function renderizarMapa(mapaTamanho, d, mundo) {
 
             if (mundo.mundo[x][y].buraco) {
                 salaDiv.innerHTML += "<img src=\"textures/role.png\" id=\"buraco\" alt=\"\">";
-            }
-            if (mundo.mundo[x][y].wumpus != null) {
-                salaDiv.innerHTML += "<img src=\"textures/canvaWumpusVivo.png\" id=\"" + x + "," + y + "_wumpus\" class=\"wumpus\" alt=\"\">";
-            }
-            // if (mundo.mundo[x][y].fedor) {
-            //     salaDiv.innerHTML += "<p>fedor</p>";
-            // }
-            // if (mundo.mundo[x][y].brisa) {
-            //     salaDiv.innerHTML += "<p>brisa</p>";
-            // }
-            if (mundo.mundo[x][y].ouro) {
-                salaDiv.innerHTML += "<img src=\"textures/azedinha.png\" id=\"" + x + "," + y + "_ouroItem\" alt=\"\">";
+            } else {
+                if (mundo.mundo[x][y].wumpus != null) {
+                    salaDiv.innerHTML += "<img src=\"textures/canvaWumpusVivo.png\" id=\"" + x + "," + y + "_wumpus\" class=\"wumpus\" alt=\"\">";
+                }
+
+                if (localStorage.getItem("sensacoes") == "true") {
+                    if (mundo.mundo[x][y].fedor) {
+                        if (mundo.mundo[x][y].brisa) {
+                            salaDiv.innerHTML += "<img src=\"textures/fedorEBrisa.png\" id=\"fedor\" class=\"sensacao\" alt=\"\">";
+                        } else {
+                            salaDiv.innerHTML += "<img src=\"textures/fedor.png\" id=\"fedor\" class=\"sensacao\" alt=\"\">";
+                        }
+                    } else {
+                        if (mundo.mundo[x][y].brisa) {
+                            salaDiv.innerHTML += "<img src=\"textures/brisa.png\" id=\"brisa\" class=\"sensacao\"  alt=\"\">";
+                        }
+                    }
+                }
+
+
+
+                if (mundo.mundo[x][y].ouro) {
+                    salaDiv.innerHTML += "<img src=\"textures/azedinha.png\" id=\"" + x + "," + y + "_ouroItem\" alt=\"\">";
+                }
             }
 
             mapa.appendChild(salaDiv);
@@ -433,7 +445,7 @@ let mundo = new Mundo(d);
 mundo.agente = new Agente(mundo.wumpus, mundo.mundo);
 renderizarMapa(mapaTamanhoPixels, d, mundo);
 
-let velocidades = [100, 500, 1000, 1500, 2000];
+let velocidades = [2000, 1500, 1000, 500, 100];
 let indiceVelocidade = 2;
 document.getElementById("velocidadeLink").textContent = (velocidades[indiceVelocidade] / 1000).toFixed(1);
 

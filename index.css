@@ -12,10 +12,10 @@ body {
 
 #menu {
     width: 750px;
-    height: 550px;
+    height: 560px;
     background-image: url(textures/interface/menuBabkground.png);
-    background-size: contain;
-    /* background-position: 10% 50%; */
+    background-size: 100% 100%;
+    background-position: 50% 50%;
     background-repeat: no-repeat;
     display: flex;
     align-items: center;
@@ -24,7 +24,7 @@ body {
     /* border: solid 2px white; */
     /* background-color: red; */
     padding: 20px;
-    margin-top: 60px;
+    /* margin-top: 60px; */
 }
 
 #menuOpcoes {
@@ -66,12 +66,17 @@ body {
     height: auto;
 } */
 
+#menuOpcoes #direita {
+    padding-top: 20px;
+}
+
 #backgroundSalaMenuDiv {
     width: 210px;
     height: 210px;
     display: flex;
     align-items: center;
     justify-content: center;
+    border: solid 2px white;
 }
 
 #inputTamanhoSala {
@@ -109,14 +114,14 @@ p {
     color: white;
     border: none;
     font-family: 'edosz';
-    font-size: 25px;
+    font-size: 45px;
     width: 150px;
-    height: 40px;
+    height: 100px;
     text-decoration: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-size: contain;
+    background-size: 100% 100%;
     background-position: 50% 50%;
     background-repeat: no-repeat;
     margin-top: 10px;
@@ -141,10 +146,38 @@ input {
     margin-bottom: 10px;
 }
 
-#gameLogo {
-    width: 270px;
+#gameLogo,
+#canvaLogo {
     height: auto;
     position: absolute;
+    margin-bottom: -250px;
     /* top: 40px; */
-    margin-bottom: 600px;
+    /* margin-bottom: 600px; */
+    /* left: 200px; */
+
+    /* margin-top: -500px; */
+}
+
+#gameLogo {
+    width: 250px;
+    margin-left: -620px;
+}
+
+#canvaLogo {
+    width: 220px;
+    margin-right: -620px;
+}
+
+#checkaSensacoes {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* padding: 10px; */
+}
+
+#mostrarSensacoes {
+    margin: 0;
+    padding: 0;
+    height: 30px;
+    width: 30px;
 }

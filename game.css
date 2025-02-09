@@ -24,20 +24,21 @@
 
 .sala img {
     width: 80%;
-    height: 80%;
-    z-index: 1000;
+    height: auto;
+    /* object-fit: contain; */
+    z-index: 10;
 }
 
 .sala p {
     font-size: 10px;
 }
 
-#sala #poco {
+/* #sala #poco {
     background-color: white;
     width: 80px;
     height: 80px;
     border-radius: 200px;
-}
+} */
 
 #divPontuacao p {
     margin: 0px 10px;
@@ -189,4 +190,21 @@
     font-size: 50px;
     padding-top: 40px;
     text-align: center;
+}
+
+/* #agente {
+    position: relative;
+    width: 80%;
+    height: auto;
+    object-fit: contain;
+    z-index: 1000;
+} */
+
+#fedor,
+#brisa {
+    /* position: absolute; */
+    width: 60px;
+    position: absolute;
+    z-index: 5;
+    /* object-fit: cover; */
 }
