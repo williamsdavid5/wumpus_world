@@ -214,8 +214,8 @@ function renderizarMapa(mapaTamanho, d, mundo) {
     mapa.style.gridTemplateRows = 'repeat(' + d + ', ' + mapaTamanho + 'px)';
 
     document.getElementById("flechasNumero").textContent = mundo.flechasDisparadas;
-    document.getElementById("Wumpus Mortos").textContent = "Wumpus mortos: " + mundo.wumpusMortos;
-    document.getElementById("Ouro Coletado").textContent = "Ouro coletado: " + mundo.ouroColetado;
+    document.getElementById("Wumpus Mortos").textContent = "Canvas mortos: " + mundo.wumpusMortos;
+    document.getElementById("Ouro Coletado").textContent = "Azedinhas coletadas: " + mundo.ouroColetado;
     document.getElementById("Flechas disparadas").textContent = "Tiros disparados: " + mundo.flechasDisparadas;
     document.getElementById("mortes por wumpus").textContent = "Mortes por wumpus: " + mundo.mortesPorWumpus;
     document.getElementById("mortes por buraco").textContent = "Mortes por buraco: " + mundo.mortesPorBuraco;
@@ -322,7 +322,7 @@ function rodarGameAleatorio(mundo) {
             agente.pontuacao -= 1000;
 
             mundo.agentesNumero += 1;
-            document.getElementById("logPontuacao").value = "Agente " + mundo.agentesNumero + ": " + agente.pontuacao + ", morto por wumpus" + "\n" + document.getElementById("logPontuacao").value;
+            document.getElementById("logPontuacao").value = "Agente " + mundo.agentesNumero + ": " + agente.pontuacao + ", morto por canva" + "\n" + document.getElementById("logPontuacao").value;
 
 
             console.log("Pontucão do agente: " + agente.pontuacao);
@@ -390,7 +390,7 @@ function rodarGameAleatorio(mundo) {
             posicoesWumpus.push([morreu[1], morreu[2]]);
             document.getElementById(morreu[1] + "," + morreu[2] + "_wumpus").src = "textures/canvaWumpusMorto.png";
             mundo.wumpusMortos += 1;
-            document.getElementById("Wumpus Mortos").textContent = "Wumpus mortos: " + mundo.wumpusMortos;
+            document.getElementById("Wumpus Mortos").textContent = "Canvas mortos: " + mundo.wumpusMortos;
         }
     }
 
@@ -407,7 +407,7 @@ function rodarGameAleatorio(mundo) {
         agente.pontuacao = 0;
         agente.flechas = mundo.wumpus;
         mundo.ouroColetado += 1;
-        document.getElementById("Ouro Coletado").textContent = "Ouro coletado: " + mundo.ouroColetado;
+        document.getElementById("Ouro Coletado").textContent = "Azedinhas coletadas: " + mundo.ouroColetado;
         document.getElementById("vitoriasPontuacao").textContent = agente.vitorias;
         document.getElementById("flechasNumero").textContent = agente.flechas;
         document.getElementById("pontuacao").textContent = agente.pontuacao;
