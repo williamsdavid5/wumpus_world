@@ -324,8 +324,6 @@ function rodarGameAleatorio(mundo) {
             mundo.agentesNumero += 1;
             document.getElementById("logPontuacao").value = "Agente " + mundo.agentesNumero + ": " + agente.pontuacao + ", morto por canva" + "\n" + document.getElementById("logPontuacao").value;
 
-
-            console.log("Pontucão do agente: " + agente.pontuacao);
             agente.pontuacao = 0;
             agente.flechas = mundo.wumpus;
             mundo.mortesPorWumpus += 1;
@@ -346,7 +344,6 @@ function rodarGameAleatorio(mundo) {
         mundo.agentesNumero += 1;
         document.getElementById("logPontuacao").value = "Agente " + mundo.agentesNumero + ": " + agente.pontuacao + ", morto por buraco" + "\n" + document.getElementById("logPontuacao").value;
 
-        console.log("Pontucão do agente: " + agente.pontuacao);
         agente.pontuacao = 0;
         agente.ouro = 0;
         agente.flechas = mundo.wumpus;
@@ -370,7 +367,6 @@ function rodarGameAleatorio(mundo) {
 
     //sentiu fedor, disparou
     if (mundo.mundo[agente.x][agente.y].fedor && agente.flechas > 0) {
-
         let disparos = [
             () => agente.dispararNorte(),
             () => agente.dispararSul(),
@@ -392,6 +388,7 @@ function rodarGameAleatorio(mundo) {
             mundo.wumpusMortos += 1;
             document.getElementById("Wumpus Mortos").textContent = "Canvas mortos: " + mundo.wumpusMortos;
         }
+
     }
 
     // chegou em 0,0 com ouro
@@ -403,7 +400,6 @@ function rodarGameAleatorio(mundo) {
         mundo.agentesNumero += 1;
         document.getElementById("logPontuacao").value = "Agente " + mundo.agentesNumero + ": " + agente.pontuacao + ", VITÓRIA!!!!!!!!!!!!!!!!" + "\n" + document.getElementById("logPontuacao").value;
 
-        console.log("Pontucão do agente: " + agente.pontuacao);
         agente.pontuacao = 0;
         agente.flechas = mundo.wumpus;
         mundo.ouroColetado += 1;
@@ -456,7 +452,13 @@ document.getElementById("velocidadeLink").addEventListener("click", () => {
     }, velocidades[indiceVelocidade]);
 
     document.getElementById("velocidadeLink").textContent = (velocidades[indiceVelocidade] / 1000).toFixed(1);
-})
+});
+
+document.getElementById("atualizarMundo").addEventListener("click", function (event) {
+    event.preventDefault();
+    location.replace(location.href);
+});
+
 
 let d = localStorage.getItem("dimensaoMapa");
 let mapaTamanhoPixels = localStorage.getItem("dimensaoSala");
