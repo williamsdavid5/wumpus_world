@@ -459,6 +459,12 @@ document.getElementById("atualizarMundo").addEventListener("click", function (ev
     location.replace(location.href);
 });
 
+document.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', event => {
+        event.preventDefault();
+    });
+});
+
 
 let d = localStorage.getItem("dimensaoMapa");
 let mapaTamanhoPixels = localStorage.getItem("dimensaoSala");
