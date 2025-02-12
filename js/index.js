@@ -14,11 +14,13 @@ tamanhoSala.addEventListener("input", function () {
 
 const dimensaoMapa = document.getElementById("dimensaoMapa");
 const mostrarSensacoes = document.getElementById("mostrarSensacoes");
+const agenteSelecionado = document.getElementById("opcoesDeAgente");
 
 document.getElementById("botaoIniciar").addEventListener("click", function () {
     localStorage.setItem("dimensaoSala", tamanhoSala.value);
     localStorage.setItem("dimensaoMapa", dimensaoMapa.value);
     localStorage.setItem("sensacoes", mostrarSensacoes.checked);
+    localStorage.setItem("agente", agenteSelecionado.value);
 
     window.location.href = "game.html";
 });

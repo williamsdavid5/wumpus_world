@@ -39,7 +39,7 @@ p {
 
 .sala {
 
-    background-image: url(textures/background.png);
+    background-image: url(../textures/background.png);
     background-size: 100%;
     border-radius: 5px;
     color: white;
@@ -170,7 +170,7 @@ p {
     position: absolute;
     width: 120px;
     height: 120px;
-    background-image: url(textures/interface/pauseButton.png);
+    background-image: url(../textures/interface/pauseButton.png);
     /* background-image: url(textures/interface/playButton.png); */
     background-size: cover;
     text-decoration: none;
@@ -190,7 +190,7 @@ p {
     position: absolute;
     width: 90px;
     height: 90px;
-    background-image: url(textures/interface/atualizarMundo.png);
+    background-image: url(../textures/interface/atualizarMundo.png);
     /* background-image: url(textures/interface/playButton.png); */
     background-size: cover;
     text-decoration: none;
@@ -217,7 +217,7 @@ p {
     position: absolute;
     width: 160px;
     height: 160px;
-    background-image: url(textures/interface/relogio.png);
+    background-image: url(../textures/interface/relogio.png);
     background-size: cover;
     border: none;
     margin-left: 730px;

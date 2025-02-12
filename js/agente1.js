@@ -483,8 +483,3 @@ let internal = setInterval(() => {
     rodarGameAleatorio(mundo);
 }, velocidades[indiceVelocidade]);
 let rodando = true;
-
-
-
-
-

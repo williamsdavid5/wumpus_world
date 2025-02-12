@@ -13,7 +13,7 @@ body {
 #menu {
     width: 750px;
     height: 560px;
-    background-image: url(textures/interface/menuBabkground.png);
+    background-image: url(../textures/interface/menuBabkground.png);
     background-size: 100% 100%;
     background-position: 50% 50%;
     background-repeat: no-repeat;
@@ -109,7 +109,7 @@ p {
 }
 
 #botaoIniciar {
-    background-image: url(textures/interface/buttomPaper.png);
+    background-image: url(../textures/interface/buttomPaper.png);
     padding: 20px;
     color: white;
     border: none;

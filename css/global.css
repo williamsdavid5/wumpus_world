@@ -6,7 +6,7 @@ body {
 
 @font-face {
     font-family: 'edosz';
-    src: url('fonts/edosz.ttf') format('truetype');
+    src: url('../fonts/edosz.ttf') format('truetype');
     font-weight: normal;
     /* ou bold, conforme necessário */
     font-style: normal;
@@ -15,7 +15,7 @@ body {
 
 @font-face {
     font-family: 'bebas';
-    src: url('fonts/BebasNeue-Regular.otf') format('truetype');
+    src: url('../fonts/BebasNeue-Regular.otf') format('truetype');
     font-weight: normal;
     /* ou bold, conforme necessário */
     font-style: normal;
