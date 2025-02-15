@@ -45,14 +45,14 @@ class Agente {
         // this.imaginarMundo(1);
     }
 
-    imaginarMundo(movimentoPosicao, parede) {
+    imaginarMundo(movimentoPosicao) {
 
-        if (!parede) {
+        if (movimentoPosicao == this.mundoImaginario.length) {
             let novoMundoImaginario = [];
 
-            for (let x = 0; x < movimentoPosicao + 2; x++) {
+            for (let x = 0; x < movimentoPosicao + 1; x++) {
                 let vetorTemporario = [];
-                for (let y = 0; y < movimentoPosicao + 2; y++) {
+                for (let y = 0; y < movimentoPosicao + 1; y++) {
                     vetorTemporario.push(new Sala(x, y));
                 }
                 novoMundoImaginario.push(vetorTemporario);
@@ -68,12 +68,11 @@ class Agente {
 
             this.mundoImaginario = novoMundoImaginario;
 
+        } else {
+            this.mundoImaginario[this.x][this.y] = this.mundo[this.x][this.y];
         }
-        // else {
-        //     this.mundoImaginario[this.x][this.y] = this.mundo[this.x][this.y];
-        // }
 
-        // renderizarMapaImaginario(mapaTamanhoPixels, this.mundoImaginario.length, this.mundoImaginario, "mapaImaginario");
+        renderizarMapaImaginario(mapaTamanhoPixels, this.mundoImaginario.length, this.mundoImaginario, "mapaImaginario");
     }
 
     moverNorte() {
@@ -81,16 +80,9 @@ class Agente {
             this.sala = this.mundo[this.x - 1][this.y];
             this.x -= 1;
 
-            let parede = false;
-
-            if (!this.mundo[this.x - 1] || this.mundo[this.x - 1][this.y] == undefined) {
-                parede = true;
-            }
-
-            this.imaginarMundo(this.x, parede);
+            this.imaginarMundo(this.x);
         } catch (e) {
             console.log("erro ao mover para o norte");
-            console.log(e);
         }
     }
 
@@ -99,13 +91,7 @@ class Agente {
             this.sala = this.mundo[this.x + 1][this.y];
             this.x += 1;
 
-            let parede = false;
-
-            if (!this.mundo[this.x + 1] || this.mundo[this.x + 1][this.y] == undefined) {
-                parede = true;
-            }
-
-            this.imaginarMundo(this.x, parede);
+            this.imaginarMundo(this.x);
 
 
         } catch (e) {
@@ -118,16 +104,9 @@ class Agente {
             this.sala = this.mundo[this.x][this.y + 1];
             this.y += 1;
 
-            let parede = false;
-
-            if (this.mundo[this.x][this.y + 1] || this.mundo[this.x][this.y + 1] == undefined) {
-                parede = true;
-            }
-
-            this.imaginarMundo(this.y, parede);
+            this.imaginarMundo(this.y);
         } catch (e) {
             console.log("erro ao mover para o leste");
-            console.log(e);
         }
     }
 
@@ -136,16 +115,9 @@ class Agente {
             this.sala = this.mundo[this.x][this.y - 1];
             this.y -= 1;
 
-            let parede = false;
-
-            if (!this.mundo[this.x][this.y - 1] || this.mundo[this.x][this.y - 1] == undefined) {
-                parede = true;
-            }
-
-            this.imaginarMundo(this.y, parede);
+            this.imaginarMundo(this.y);
         } catch (e) {
             console.log("erro ao mover para o oeste");
-            console.log(e);
         }
     }
 
@@ -504,6 +476,10 @@ function rodarGameAleatorio(mundo) {
         if (morreu[0]) {
             // console.log(morreu[1], morreu[2]);
             posicoesWumpus.push([morreu[1], morreu[2]]);
+
+            agente.mundoImaginario[morreu[1]][morreu[2]].wumpus = true;
+            agente.imaginarMundo(0);
+
             document.getElementById(morreu[1] + "," + morreu[2] + "_wumpus").src = "textures/canvaWumpusMorto.png";
             mundo.wumpusMortos += 1;
             document.getElementById("Wumpus Mortos").textContent = "Canvas mortos: " + mundo.wumpusMortos;
@@ -540,7 +516,7 @@ function rodarGameAleatorio(mundo) {
 
 }
 
-function rodarGameManual(direcao) {
+function rodarGameManual(direcao, mundo) {
     document.getElementById("agente").remove();
 
     let agente = mundo.agente;
@@ -640,6 +616,10 @@ function rodarGameManual(direcao) {
         if (morreu[0]) {
             // console.log(morreu[1], morreu[2]);
             posicoesWumpus.push([morreu[1], morreu[2]]);
+
+            agente.mundoImaginario[morreu[1]][morreu[2]].wumpus = true;
+            agente.imaginarMundo(0);
+
             document.getElementById(morreu[1] + "," + morreu[2] + "_wumpus").src = "textures/canvaWumpusMorto.png";
             mundo.wumpusMortos += 1;
             document.getElementById("Wumpus Mortos").textContent = "Canvas mortos: " + mundo.wumpusMortos;
@@ -697,7 +677,7 @@ document.addEventListener("keydown", function (event) {
             break;
     }
 
-    rodarGameManual(direcao);
+    rodarGameManual(direcao, mundo);
 });
 
 function agenteClique() {
