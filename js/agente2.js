@@ -617,8 +617,9 @@ function rodarGameManual(direcao, mundo) {
             // console.log(morreu[1], morreu[2]);
             posicoesWumpus.push([morreu[1], morreu[2]]);
 
+            agente.imaginarMundo(morreu[1] > morreu[2] ? morreu[1] : morreu[2]);
             agente.mundoImaginario[morreu[1]][morreu[2]].wumpus = true;
-            agente.imaginarMundo(0);
+            agente.imaginarMundo(morreu[1] > morreu[2] ? morreu[1] : morreu[2]);
 
             document.getElementById(morreu[1] + "," + morreu[2] + "_wumpus").src = "textures/canvaWumpusMorto.png";
             mundo.wumpusMortos += 1;
