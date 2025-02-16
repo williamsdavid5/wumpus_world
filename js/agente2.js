@@ -39,10 +39,12 @@ class Agente {
         this.vitorias = 0;
         this.pontuacao = 0;
 
+        this.pilhaDeMovimentos = [];
+
         // this.tamanhoMundoImaginario = 1;
         this.mundoImaginario = [[this.mundo[0][0]]];
         this.mundoImaginario[0][0].passou = true;
-        renderizarMapaImaginario(mapaTamanhoPixels, this.mundoImaginario.length, this.mundoImaginario, "mapaImaginario");
+        renderizarMapaImaginario(mapaTamanhoPixels * 0.8, this.mundoImaginario.length, this.mundoImaginario, "mapaImaginario");
         // this.imaginarMundo(1);
     }
 
@@ -73,7 +75,7 @@ class Agente {
             this.mundoImaginario[this.x][this.y] = this.mundo[this.x][this.y];
         }
 
-        renderizarMapaImaginario(mapaTamanhoPixels, this.mundoImaginario.length, this.mundoImaginario, "mapaImaginario");
+        renderizarMapaImaginario(mapaTamanhoPixels * 0.8, this.mundoImaginario.length, this.mundoImaginario, "mapaImaginario");
     }
 
     moverNorte() {
@@ -81,6 +83,7 @@ class Agente {
             this.sala = this.mundo[this.x - 1][this.y];
             this.x -= 1;
             this.mundo[this.x][this.y].passou = true;
+            this.pilhaDeMovimentos.push("norte");
             this.imaginarMundo(this.x);
         } catch (e) {
             console.log("erro ao mover para o norte");
@@ -92,6 +95,7 @@ class Agente {
             this.sala = this.mundo[this.x + 1][this.y];
             this.x += 1;
             this.mundo[this.x][this.y].passou = true;
+            this.pilhaDeMovimentos.push("sul");
             this.imaginarMundo(this.x);
 
 
@@ -105,6 +109,7 @@ class Agente {
             this.sala = this.mundo[this.x][this.y + 1];
             this.y += 1;
             this.mundo[this.x][this.y].passou = true;
+            this.pilhaDeMovimentos.push("leste");
             this.imaginarMundo(this.y);
         } catch (e) {
             console.log("erro ao mover para o leste");
@@ -116,6 +121,7 @@ class Agente {
             this.sala = this.mundo[this.x][this.y - 1];
             this.y -= 1;
             this.mundo[this.x][this.y].passou = true;
+            this.pilhaDeMovimentos.push("oeste");
             this.imaginarMundo(this.y);
         } catch (e) {
             console.log("erro ao mover para o oeste");
@@ -429,17 +435,15 @@ function rodarGame(mundo) {
     let ouro = mundo.ouro;
     let posicoesWumpus = mundo.posicoesWumpus;
 
-    if (agente.carregandoOuro > 0) {
-        if (verificarCaminho(agente.x - 1, agente.y, agente.mundoImaginario, agente, mundo, posicoesWumpus)) {
-            agente.moverNorte();
-        } else if (verificarCaminho(agente.x, agente.y - 1, agente.mundoImaginario, agente, mundo, posicoesWumpus)) {
-            agente.moverOeste();
-        } else if (verificarCaminho(agente.x + 1, agente.y, agente.mundoImaginario, agente, mundo, posicoesWumpus)) {
-            agente.moverSul();
-        } else if (verificarCaminho(agente.x, agente.y + 1, agente.mundoImaginario, agente, mundo, posicoesWumpus)) {
-            agente.moverLeste();
-        }
 
+    if (agente.carregandoOuro > 0 && verificarCaminho(agente.x - 1, agente.y, agente.mundoImaginario, agente, mundo, posicoesWumpus) && agente.pilhaDeMovimentos[agente.pilhaDeMovimentos.length - 1] !== "sul") {
+        agente.moverNorte();
+    } else if (agente.carregandoOuro > 0 && verificarCaminho(agente.x, agente.y - 1, agente.mundoImaginario, agente, mundo, posicoesWumpus) && agente.pilhaDeMovimentos[agente.pilhaDeMovimentos.length - 1] !== "leste") {
+        agente.moverOeste();
+    } else if (agente.carregandoOuro > 0 && verificarCaminho(agente.x + 1, agente.y, agente.mundoImaginario, agente, mundo, posicoesWumpus) && agente.pilhaDeMovimentos[agente.pilhaDeMovimentos.length - 1] !== "norte") {
+        agente.moverSul();
+    } else if (agente.carregandoOuro > 0 && verificarCaminho(agente.x, agente.y + 1, agente.mundoImaginario, agente, mundo, posicoesWumpus) && agente.pilhaDeMovimentos[agente.pilhaDeMovimentos.length - 1] !== "oeste") {
+        agente.moverLeste();
     } else {
         let movimentos = [];
 
@@ -464,6 +468,8 @@ function rodarGame(mundo) {
         document.getElementById("pontuacao").textContent = agente.pontuacao;
     }
 
+    console.log("pilha de movimentos:");
+    console.log(agente.pilhaDeMovimentos);
 
     // morreu para wumpus
     if (mundo.mundo[agente.x][agente.y].wumpus) {
@@ -771,6 +777,11 @@ mundo.agente = new Agente(mundo.wumpus, mundo.mundo);
 renderizarMapa(mapaTamanhoPixels, d, mundo, "mapa");
 let auturaMapa = document.getElementById("mapa").offsetHeight;
 document.getElementById("logPontuacao").style.height = auturaMapa - 70 + "px";
+
+let mapaImaginarioLabel = document.createElement("p");
+mapaImaginarioLabel.textContent = "Mapa Imagiário";
+mapaImaginarioLabel.id = "mapaImaginarioLabel";
+document.body.appendChild(mapaImaginarioLabel);
 
 let velocidades = [2000, 1500, 1000, 500, 100];
 let indiceVelocidade = 2;

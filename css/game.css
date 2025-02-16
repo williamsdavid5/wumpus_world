@@ -256,3 +256,10 @@ p {
 .passou {
     background-color: red;
 }
+
+#mapaImaginarioLabel {
+    position: absolute;
+    margin-left: 900px;
+    margin-top: 120px;
+    font-size: 40px;
+}
