@@ -28,6 +28,7 @@ class Agente {
         this.flechas = flecha;
         this.mundo = mundo;
         this.ouro = 0;
+        this.carregandoOuro = 0;
 
         this.x = 0;
         this.y = 0;
@@ -391,6 +392,10 @@ function restaurarMundo(mundo, posicoesOuro, posicoesWumpus, agente) {
 function verificarCaminho(x, y, mundoImaginario, agente, mundo, posicoesWumpus) {
     let mover = true;
 
+    if ((x < 0 || x >= mundo.mundo.length) || (y < 0 || y >= mundo.mundo.length)) {
+        return false;
+    }
+
     if (mundoImaginario[x] && mundoImaginario[x][y] !== undefined) {
         if (mundoImaginario[x][y].buraco) {
             mover = false;
@@ -424,38 +429,41 @@ function rodarGame(mundo) {
     let ouro = mundo.ouro;
     let posicoesWumpus = mundo.posicoesWumpus;
 
-    let movimentos = [];
+    if (agente.carregandoOuro > 0) {
+        if (verificarCaminho(agente.x - 1, agente.y, agente.mundoImaginario, agente, mundo, posicoesWumpus)) {
+            agente.moverNorte();
+        } else if (verificarCaminho(agente.x, agente.y - 1, agente.mundoImaginario, agente, mundo, posicoesWumpus)) {
+            agente.moverOeste();
+        } else if (verificarCaminho(agente.x + 1, agente.y, agente.mundoImaginario, agente, mundo, posicoesWumpus)) {
+            agente.moverSul();
+        } else if (verificarCaminho(agente.x, agente.y + 1, agente.mundoImaginario, agente, mundo, posicoesWumpus)) {
+            agente.moverLeste();
+        }
 
-    if (mundo.mundo[agente.x - 1] && mundo.mundo[agente.x - 1][agente.y] !== undefined) {
+    } else {
+        let movimentos = [];
+
         if (verificarCaminho(agente.x - 1, agente.y, agente.mundoImaginario, agente, mundo, posicoesWumpus)) {
             movimentos.push(() => agente.moverNorte());
         }
-    }
-    if (mundo.mundo[agente.x + 1] && mundo.mundo[agente.x + 1][agente.y] !== undefined) {
 
         if (verificarCaminho(agente.x + 1, agente.y, agente.mundoImaginario, agente, mundo, posicoesWumpus)) {
             movimentos.push(() => agente.moverSul());
         }
-    }
-    if (mundo.mundo[agente.x] && mundo.mundo[agente.x][agente.y + 1] !== undefined) {
 
         if (verificarCaminho(agente.x, agente.y + 1, agente.mundoImaginario, agente, mundo, posicoesWumpus)) {
             movimentos.push(() => agente.moverLeste());
         }
-    }
-    if (mundo.mundo[agente.x] && mundo.mundo[agente.x][agente.y - 1] !== undefined) {
 
         if (verificarCaminho(agente.x, agente.y - 1, agente.mundoImaginario, agente, mundo, posicoesWumpus)) {
             movimentos.push(() => agente.moverOeste());
         }
 
-
+        movimentos[Math.floor(Math.random() * movimentos.length)]();
+        agente.pontuacao -= 1;
+        document.getElementById("pontuacao").textContent = agente.pontuacao;
     }
 
-    movimentos[Math.floor(Math.random() * movimentos.length)]();
-    agente.pontuacao -= 1;
-    document.getElementById("pontuacao").textContent = agente.pontuacao;
-    // console.log(agente.x, agente.y);
 
     // morreu para wumpus
     if (mundo.mundo[agente.x][agente.y].wumpus) {
@@ -504,59 +512,34 @@ function rodarGame(mundo) {
         posicoesOuro.push([agente.x, agente.y]);
         mundo.mundo[agente.x][agente.y].ouro = false;
         agente.ouro += 1;
+        agente.carregandoOuro = 1;
         agente.pontuacao -= 1;
         document.getElementById(agente.x + "," + agente.y + "_ouroItem").remove();
         document.getElementById("pontuacao").textContent = agente.pontuacao;
     }
 
-    //sentiu fedor, disparou
-    // if (mundo.mundo[agente.x][agente.y].fedor && agente.flechas > 0) {
-    //     let disparos = [
-    //         () => agente.dispararNorte(),
-    //         () => agente.dispararSul(),
-    //         () => agente.dispararLeste(),
-    //         () => agente.dispararOeste()
-    //     ];
-    //     agente.pontuacao -= 10;
-    //     document.getElementById("pontuacao").textContent = agente.pontuacao;
-    //     mundo.flechasDisparadas += 1;
-    //     let morreu = disparos[Math.floor(Math.random() * disparos.length)]();
-
-    //     document.getElementById("flechasNumero").textContent = agente.flechas;
-    //     document.getElementById("Flechas disparadas").textContent = "Tiros disparados: " + mundo.flechasDisparadas;
-
-    //     if (morreu[0]) {
-    //         posicoesWumpus.push([morreu[1], morreu[2]]);
-
-    //         document.getElementById(morreu[1] + "," + morreu[2] + "_wumpus").src = "textures/canvaWumpusMorto.png";
-    //         mundo.wumpusMortos += 1;
-    //         document.getElementById("Wumpus Mortos").textContent = "Canvas mortos: " + mundo.wumpusMortos;
-
-    //         if (morreu[1] >= 0 && morreu[1] < agente.mundoImaginario.length &&
-    //             morreu[2] >= 0 && morreu[2] < agente.mundoImaginario[0].length) {
-    //             agente.mundoImaginario[morreu[1]][morreu[2]] = mundo.mundo[morreu[1]][morreu[2]];
-    //         }
-    //     }
-
-    // }
-
     // chegou em 0,0 com ouro
-    if (agente.x == 0 && agente.y == 0 && agente.ouro == ouro) {
-        agente.vitorias += 1;
-        agente.pontuacao += 1000;
-        agente.ouro = 0;
 
-        mundo.agentesNumero += 1;
-        document.getElementById("logPontuacao").value = "Agente " + mundo.agentesNumero + ": " + agente.pontuacao + ", VITÓRIA!!!!!!!!!!!!!!!!" + "\n" + document.getElementById("logPontuacao").value;
+    if (agente.x == 0 && agente.y == 0) {
+        agente.carregandoOuro = 0;
 
-        agente.pontuacao = 0;
-        agente.flechas = mundo.wumpus;
-        mundo.ouroColetado += 1;
-        document.getElementById("Ouro Coletado").textContent = "Azedinhas coletadas: " + mundo.ouroColetado;
-        document.getElementById("vitoriasPontuacao").textContent = agente.vitorias;
-        document.getElementById("flechasNumero").textContent = agente.flechas;
-        document.getElementById("pontuacao").textContent = agente.pontuacao;
-        restaurarMundo(mundo.mundo, posicoesOuro, posicoesWumpus, agente);
+        if (agente.ouro == ouro) {
+            agente.vitorias += 1;
+            agente.pontuacao += 1000;
+            agente.ouro = 0;
+
+            mundo.agentesNumero += 1;
+            document.getElementById("logPontuacao").value = "Agente " + mundo.agentesNumero + ": " + agente.pontuacao + ", VITÓRIA!!!!!!!!!!!!!!!!" + "\n" + document.getElementById("logPontuacao").value;
+
+            agente.pontuacao = 0;
+            agente.flechas = mundo.wumpus;
+            mundo.ouroColetado += 1;
+            document.getElementById("Ouro Coletado").textContent = "Azedinhas coletadas: " + mundo.ouroColetado;
+            document.getElementById("vitoriasPontuacao").textContent = agente.vitorias;
+            document.getElementById("flechasNumero").textContent = agente.flechas;
+            document.getElementById("pontuacao").textContent = agente.pontuacao;
+            restaurarMundo(mundo.mundo, posicoesOuro, posicoesWumpus, agente);
+        }
     }
 
     if (agente.flechas > 0) {
