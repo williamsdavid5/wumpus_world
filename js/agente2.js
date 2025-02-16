@@ -29,6 +29,7 @@ class Agente {
         this.mundo = mundo;
         this.ouro = 0;
         this.carregandoOuro = 0;
+        this.posicoesOuro = [];
 
         this.x = 0;
         this.y = 0;
@@ -395,27 +396,27 @@ function restaurarMundo(mundo, posicoesOuro, posicoesWumpus, agente) {
     agente.imaginarMundo(0);
 }
 
-function verificarCaminho(x, y, mundoImaginario, agente, mundo, posicoesWumpus) {
+function verificarCaminho(x, y, agente, mundo) {
     let mover = true;
 
     if ((x < 0 || x >= mundo.mundo.length) || (y < 0 || y >= mundo.mundo.length)) {
         return false;
     }
 
-    if (mundoImaginario[x] && mundoImaginario[x][y] !== undefined) {
-        if (mundoImaginario[x][y].buraco) {
+    if (agente.mundoImaginario[x] && agente.mundoImaginario[x][y] !== undefined) {
+        if (agente.mundoImaginario[x][y].buraco) {
             mover = false;
         }
 
-        if (mundoImaginario[x][y].wumpus != null && mundoImaginario[x][y].wumpus.vivo == true) {
+        if (agente.mundoImaginario[x][y].wumpus != null && agente.mundoImaginario[x][y].wumpus.vivo == true) {
             agente.pontuacao -= 10;
             document.getElementById("pontuacao").textContent = agente.pontuacao;
-            posicoesWumpus.push([x, y]);
+            mundo.posicoesWumpus.push([x, y]);
             mundo.flechasDisparadas += 1;
             agente.pontuacao += 1000;
             agente.flechas -= 1;
             mundo.mundo[x][y].wumpus.vivo = false;
-            mundoImaginario[x][y].wumpus.vivo = false;
+            agente.mundoImaginario[x][y].wumpus.vivo = false;
             mundo.wumpusMortos += 1;
             document.getElementById("flechasNumero").textContent = agente.flechas;
             document.getElementById("Flechas disparadas").textContent = "Tiros disparados: " + mundo.flechasDisparadas;
@@ -438,52 +439,75 @@ function rodarGame(mundo) {
     let padraoDeMovimentos = false;
 
     if (agente.pilhaDeMovimentos.length >= 4) {
-        // let ultimosMovimentos = agente.pilhaDeMovimentos.slice(-4);
-        // let movimentos = new Set(ultimosMovimentos);
-
-        // if (movimentos.size === 4) {
-        //     padraoDeMovimentos = true;
-        // }
-
         let movimentos = agente.pilhaDeMovimentos.slice(-12).join("");
         let expressaoRegex = new RegExp(/(.{3,})\1+/);
 
-        console.log(movimentos);
         padraoDeMovimentos = expressaoRegex.test(movimentos);
     }
 
-    if (!padraoDeMovimentos && agente.carregandoOuro > 0 && verificarCaminho(agente.x - 1, agente.y, agente.mundoImaginario, agente, mundo, posicoesWumpus) && agente.pilhaDeMovimentos[agente.pilhaDeMovimentos.length - 1] !== "S") {
-        agente.moverNorte();
-    } else if (!padraoDeMovimentos && agente.carregandoOuro > 0 && verificarCaminho(agente.x, agente.y - 1, agente.mundoImaginario, agente, mundo, posicoesWumpus) && agente.pilhaDeMovimentos[agente.pilhaDeMovimentos.length - 1] !== "L") {
-        agente.moverOeste();
-    } else if (!padraoDeMovimentos && agente.carregandoOuro > 0 && verificarCaminho(agente.x + 1, agente.y, agente.mundoImaginario, agente, mundo, posicoesWumpus) && agente.pilhaDeMovimentos[agente.pilhaDeMovimentos.length - 1] !== "N") {
-        agente.moverSul();
-    } else if (!padraoDeMovimentos && agente.carregandoOuro > 0 && verificarCaminho(agente.x, agente.y + 1, agente.mundoImaginario, agente, mundo, posicoesWumpus) && agente.pilhaDeMovimentos[agente.pilhaDeMovimentos.length - 1] !== "O") {
+    let ouroNoMapa = false;
+    let posicaoOuroNoMapa = [];
+
+    if (agente.posicoesOuro.length > 0) {
+        for (let i = 0; i < agente.posicoesOuro.length; i++) {
+            if (agente.posicoesOuro[i][2]) {
+                ouroNoMapa = true;
+                posicaoOuroNoMapa = agente.posicoesOuro[i];
+                // console.log(posicaoOuroNoMapa);
+                break;
+            }
+        }
+    }
+
+    let ultimoMovimento = agente.pilhaDeMovimentos[agente.pilhaDeMovimentos.length - 1];
+    if (!padraoDeMovimentos && agente.carregandoOuro > 0) {
+
+        if (verificarCaminho(agente.x - 1, agente.y, agente, mundo) && ultimoMovimento !== "S") {
+            agente.moverNorte();
+        } else if (verificarCaminho(agente.x, agente.y - 1, agente, mundo) && ultimoMovimento !== "L") {
+            agente.moverOeste();
+        } else if (verificarCaminho(agente.x + 1, agente.y, agente, mundo) && ultimoMovimento !== "N") {
+            agente.moverSul();
+        } else if (verificarCaminho(agente.x, agente.y + 1, agente, mundo) && ultimoMovimento !== "O") {
+            agente.moverLeste();
+        } else {
+            agente.pilhaDeMovimentos = [];
+        }
+    }
+
+
+    else if (!padraoDeMovimentos && ouroNoMapa && agente.y < posicaoOuroNoMapa[1] && verificarCaminho(agente.x, agente.y + 1, agente, mundo) && ultimoMovimento !== "O") {
         agente.moverLeste();
-    } else {
+    } else if (!padraoDeMovimentos && ouroNoMapa && agente.x < posicaoOuroNoMapa[0] && verificarCaminho(agente.x + 1, agente.y, agente, mundo) && ultimoMovimento !== "N") {
+        agente.moverSul();
+    } else if (!padraoDeMovimentos && ouroNoMapa && agente.y > posicaoOuroNoMapa[1] && verificarCaminho(agente.x, agente.y - 1, agente, mundo) && ultimoMovimento !== "L") {
+        agente.moverOeste();
+    } else if (!padraoDeMovimentos && ouroNoMapa && agente.x > posicaoOuroNoMapa[0] && verificarCaminho(agente.x - 1, agente.y, agente, mundo) && ultimoMovimento !== "S") {
+        agente.moverNorte();
+    }
+
+
+    else {
         let movimentos = [];
 
-        if (verificarCaminho(agente.x - 1, agente.y, agente.mundoImaginario, agente, mundo, posicoesWumpus)) {
+        if (verificarCaminho(agente.x - 1, agente.y, agente, mundo)) {
             movimentos.push(() => agente.moverNorte());
         }
 
-        if (verificarCaminho(agente.x + 1, agente.y, agente.mundoImaginario, agente, mundo, posicoesWumpus)) {
+        if (verificarCaminho(agente.x + 1, agente.y, agente, mundo)) {
             movimentos.push(() => agente.moverSul());
         }
 
-        if (verificarCaminho(agente.x, agente.y + 1, agente.mundoImaginario, agente, mundo, posicoesWumpus)) {
+        if (verificarCaminho(agente.x, agente.y + 1, agente, mundo)) {
             movimentos.push(() => agente.moverLeste());
         }
 
-        if (verificarCaminho(agente.x, agente.y - 1, agente.mundoImaginario, agente, mundo, posicoesWumpus)) {
+        if (verificarCaminho(agente.x, agente.y - 1, agente, mundo)) {
             movimentos.push(() => agente.moverOeste());
         }
 
         movimentos[Math.floor(Math.random() * movimentos.length)]();
     }
-
-    // console.log("movimentos");
-    // console.log(agente.pilhaDeMovimentos);
 
     agente.pontuacao -= 1;
     document.getElementById("pontuacao").textContent = agente.pontuacao;
@@ -498,6 +522,10 @@ function rodarGame(mundo) {
 
             mundo.agentesNumero += 1;
             document.getElementById("logPontuacao").value = "Agente " + mundo.agentesNumero + ": " + agente.pontuacao + ", morto por canva" + "\n" + document.getElementById("logPontuacao").value;
+
+            for (let i = 0; i < agente.posicoesOuro.length; i++) {
+                agente.posicoesOuro[i][2] = true;
+            }
 
             agente.pontuacao = 0;
             agente.flechas = mundo.wumpus;
@@ -519,6 +547,10 @@ function rodarGame(mundo) {
         mundo.agentesNumero += 1;
         document.getElementById("logPontuacao").value = "Agente " + mundo.agentesNumero + ": " + agente.pontuacao + ", morto por buraco" + "\n" + document.getElementById("logPontuacao").value;
 
+        for (let i = 0; i < agente.posicoesOuro.length; i++) {
+            agente.posicoesOuro[i][2] = true;
+        }
+
         agente.pontuacao = 0;
         agente.ouro = 0;
         agente.flechas = mundo.wumpus;
@@ -533,17 +565,41 @@ function rodarGame(mundo) {
     //achou ouro
     if (mundo.mundo[agente.x][agente.y].ouro) {
         posicoesOuro.push([agente.x, agente.y]);
+
+        let posicaoExiste = false;
+        for (let i = 0; i < agente.posicoesOuro.length; i++) {
+            // se a posicao ja existe
+            if (agente.posicoesOuro[i][0] == agente.x && agente.posicoesOuro[i][1] == agente.y) {
+                posicaoExiste = true;
+            }
+        }
+
+        if (!posicaoExiste) {
+            agente.posicoesOuro.push([agente.x, agente.y, false]);
+        } else {
+            for (let i = 0; i < agente.posicoesOuro.length; i++) {
+                if (agente.posicoesOuro[i][0] == agente.x && agente.posicoesOuro[i][1] == agente.y) {
+                    agente.posicoesOuro[i][2] = false;
+                }
+            }
+        }
+
         mundo.mundo[agente.x][agente.y].ouro = false;
         agente.ouro += 1;
-        agente.carregandoOuro = 1;
+        agente.carregandoOuro += 1;
         agente.pontuacao -= 1;
+        agente.pilhaDeMovimentos = [];
         document.getElementById(agente.x + "," + agente.y + "_ouroItem").remove();
         document.getElementById("pontuacao").textContent = agente.pontuacao;
     }
 
     // chegou em 0,0 com ouro
-
     if (agente.x == 0 && agente.y == 0) {
+        if (agente.carregandoOuro > 0) {
+            mundo.ouroColetado += agente.carregandoOuro;
+            document.getElementById("Ouro Coletado").textContent = "Azedinhas coletadas: " + mundo.ouroColetado;
+        }
+
         agente.carregandoOuro = 0;
 
         if (agente.ouro == ouro) {
@@ -551,13 +607,16 @@ function rodarGame(mundo) {
             agente.pontuacao += 1000;
             agente.ouro = 0;
 
+            for (let i = 0; i < agente.posicoesOuro.length; i++) {
+                agente.posicoesOuro[i][2] = true;
+            }
+
+            agente.pilhaDeMovimentos = [];
             mundo.agentesNumero += 1;
             document.getElementById("logPontuacao").value = "Agente " + mundo.agentesNumero + ": " + agente.pontuacao + ", VITÓRIA!!!!!!!!!!!!!!!!" + "\n" + document.getElementById("logPontuacao").value;
-
             agente.pontuacao = 0;
             agente.flechas = mundo.wumpus;
-            mundo.ouroColetado += 1;
-            document.getElementById("Ouro Coletado").textContent = "Azedinhas coletadas: " + mundo.ouroColetado;
+
             document.getElementById("vitoriasPontuacao").textContent = agente.vitorias;
             document.getElementById("flechasNumero").textContent = agente.flechas;
             document.getElementById("pontuacao").textContent = agente.pontuacao;
