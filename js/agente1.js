@@ -383,6 +383,7 @@ function rodarGameAleatorio(mundo) {
 
         if (morreu[0]) {
             // console.log(morreu[1], morreu[2]);
+            agente.pontuacao += 1000;
             posicoesWumpus.push([morreu[1], morreu[2]]);
             document.getElementById(morreu[1] + "," + morreu[2] + "_wumpus").src = "textures/canvaWumpusMorto.png";
             mundo.wumpusMortos += 1;
@@ -415,9 +416,6 @@ function rodarGameAleatorio(mundo) {
     } else {
         document.getElementById(agente.x + "," + agente.y).innerHTML += "<img src=\"textures/linoAgente.png\" id=\"agente\" alt=\"\">";
     }
-
-
-
 }
 
 function agenteClique() {
