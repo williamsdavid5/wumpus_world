@@ -440,9 +440,13 @@ function rodarGame(mundo) {
 
     if (agente.pilhaDeMovimentos.length >= 4) {
         let movimentos = agente.pilhaDeMovimentos.slice(-12).join("");
-        let expressaoRegex = new RegExp(/(.{3,})\1+/);
+        let expressaoRegex = new RegExp(/(.{3,}.*)\1+/);
+        let expressaoRegexMovimentoLinear = new RegExp(/(.)\1{2,}/);
 
-        padraoDeMovimentos = expressaoRegex.test(movimentos);
+        if (!expressaoRegexMovimentoLinear.test(movimentos)) {
+            padraoDeMovimentos = expressaoRegex.test(movimentos);
+        }
+
     }
 
     let ouroNoMapa = false;
