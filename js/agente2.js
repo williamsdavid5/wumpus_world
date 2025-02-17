@@ -29,7 +29,7 @@ class Agente {
         this.mundo = mundo;
         this.ouro = 0;
         this.carregandoOuro = 0;
-        this.posicoesOuro = [];
+        this.posicoesObjetivo = [];
 
         this.x = 0;
         this.y = 0;
@@ -416,6 +416,14 @@ function verificarCaminho(x, y, agente, mundo) {
             agente.pontuacao += 1000;
             agente.flechas -= 1;
             mundo.mundo[x][y].wumpus.vivo = false;
+
+            //se atirou no wumpus, define esse como falso
+            for (let i = 0; i < agente.posicoesObjetivo.length; i++) {
+                if (agente.posicoesObjetivo[i][0] == x && agente.posicoesObjetivo[i][1] == y) {
+                    agente.posicoesObjetivo[i][2] = false;
+                }
+            }
+
             agente.mundoImaginario[x][y].wumpus.vivo = false;
             mundo.wumpusMortos += 1;
             document.getElementById("flechasNumero").textContent = agente.flechas;
@@ -441,7 +449,7 @@ function rodarGame(mundo) {
     if (agente.pilhaDeMovimentos.length >= 4) {
         let movimentos = agente.pilhaDeMovimentos.slice(-12).join("");
         let expressaoRegex = new RegExp(/(.{3,}.*)\1+/);
-        let expressaoRegexMovimentoLinear = new RegExp(/(.)\1{2,}/);
+        let expressaoRegexMovimentoLinear = new RegExp(/(.)\1{4,}/);
 
         if (!expressaoRegexMovimentoLinear.test(movimentos)) {
             padraoDeMovimentos = expressaoRegex.test(movimentos);
@@ -452,12 +460,11 @@ function rodarGame(mundo) {
     let ouroNoMapa = false;
     let posicaoOuroNoMapa = [];
 
-    if (agente.posicoesOuro.length > 0) {
-        for (let i = 0; i < agente.posicoesOuro.length; i++) {
-            if (agente.posicoesOuro[i][2]) {
+    if (agente.posicoesObjetivo.length > 0) {
+        for (let i = 0; i < agente.posicoesObjetivo.length; i++) {
+            if (agente.posicoesObjetivo[i][2]) {
                 ouroNoMapa = true;
-                posicaoOuroNoMapa = agente.posicoesOuro[i];
-                // console.log(posicaoOuroNoMapa);
+                posicaoOuroNoMapa = agente.posicoesObjetivo[i];
                 break;
             }
         }
@@ -465,35 +472,24 @@ function rodarGame(mundo) {
 
     let ultimoMovimento = agente.pilhaDeMovimentos[agente.pilhaDeMovimentos.length - 1];
 
-    if (!padraoDeMovimentos && ouroNoMapa) {
-        if (agente.y < posicaoOuroNoMapa[1] && verificarCaminho(agente.x, agente.y + 1, agente, mundo) && ultimoMovimento !== "O") {
-            agente.moverLeste();
-        } else if (agente.x < posicaoOuroNoMapa[0] && verificarCaminho(agente.x + 1, agente.y, agente, mundo) && ultimoMovimento !== "N") {
-            agente.moverSul();
-        } else if (agente.y > posicaoOuroNoMapa[1] && verificarCaminho(agente.x, agente.y - 1, agente, mundo) && ultimoMovimento !== "L") {
-            agente.moverOeste();
-        } else if (agente.x > posicaoOuroNoMapa[0] && verificarCaminho(agente.x - 1, agente.y, agente, mundo) && ultimoMovimento !== "S") {
-            agente.moverNorte();
-        }
-    }
 
-
-    else if (!padraoDeMovimentos && agente.carregandoOuro > 0) {
-
-        if (verificarCaminho(agente.x - 1, agente.y, agente, mundo) && ultimoMovimento !== "S") {
-            agente.moverNorte();
-        } else if (verificarCaminho(agente.x, agente.y - 1, agente, mundo) && ultimoMovimento !== "L") {
-            agente.moverOeste();
-        } else if (verificarCaminho(agente.x + 1, agente.y, agente, mundo) && ultimoMovimento !== "N") {
-            agente.moverSul();
-        } else if (verificarCaminho(agente.x, agente.y + 1, agente, mundo) && ultimoMovimento !== "O") {
-            agente.moverLeste();
-        } else {
-            agente.pilhaDeMovimentos = [];
-        }
-    }
-
-    else {
+    if (!padraoDeMovimentos && ouroNoMapa && agente.y < posicaoOuroNoMapa[1] && verificarCaminho(agente.x, agente.y + 1, agente, mundo) && ultimoMovimento !== "O") {
+        agente.moverLeste();
+    } else if (!padraoDeMovimentos && ouroNoMapa && agente.x < posicaoOuroNoMapa[0] && verificarCaminho(agente.x + 1, agente.y, agente, mundo) && ultimoMovimento !== "N") {
+        agente.moverSul();
+    } else if (!padraoDeMovimentos && ouroNoMapa && agente.y > posicaoOuroNoMapa[1] && verificarCaminho(agente.x, agente.y - 1, agente, mundo) && ultimoMovimento !== "L") {
+        agente.moverOeste();
+    } else if (!padraoDeMovimentos && ouroNoMapa && agente.x > posicaoOuroNoMapa[0] && verificarCaminho(agente.x - 1, agente.y, agente, mundo) && ultimoMovimento !== "S") {
+        agente.moverNorte();
+    } else if (!padraoDeMovimentos && agente.carregandoOuro > 0 && verificarCaminho(agente.x - 1, agente.y, agente, mundo) && ultimoMovimento !== "S") {
+        agente.moverNorte();
+    } else if (!padraoDeMovimentos && agente.carregandoOuro > 0 && verificarCaminho(agente.x, agente.y - 1, agente, mundo) && ultimoMovimento !== "L") {
+        agente.moverOeste();
+    } else if (!padraoDeMovimentos && agente.carregandoOuro > 0 && verificarCaminho(agente.x + 1, agente.y, agente, mundo) && ultimoMovimento !== "N") {
+        agente.moverSul();
+    } else if (!padraoDeMovimentos && agente.carregandoOuro > 0 && verificarCaminho(agente.x, agente.y + 1, agente, mundo) && ultimoMovimento !== "O") {
+        agente.moverLeste();
+    } else {
         let movimentos = [];
 
         if (verificarCaminho(agente.x - 1, agente.y, agente, mundo)) {
@@ -521,6 +517,9 @@ function rodarGame(mundo) {
     // morreu para wumpus
     if (mundo.mundo[agente.x][agente.y].wumpus) {
         if (mundo.mundo[agente.x][agente.y].wumpus.vivo) {
+
+            agente.posicoesObjetivo.push([agente.x, agente.y, true]);
+
             agente.x = agente.y = 0;
             agente.mortes += 1;
             agente.ouro = 0;
@@ -528,10 +527,6 @@ function rodarGame(mundo) {
 
             mundo.agentesNumero += 1;
             document.getElementById("logPontuacao").value = "Agente " + mundo.agentesNumero + ": " + agente.pontuacao + ", morto por canva" + "\n" + document.getElementById("logPontuacao").value;
-
-            for (let i = 0; i < agente.posicoesOuro.length; i++) {
-                agente.posicoesOuro[i][2] = true;
-            }
 
             agente.pontuacao = 0;
             agente.flechas = mundo.wumpus;
@@ -553,8 +548,8 @@ function rodarGame(mundo) {
         mundo.agentesNumero += 1;
         document.getElementById("logPontuacao").value = "Agente " + mundo.agentesNumero + ": " + agente.pontuacao + ", morto por buraco" + "\n" + document.getElementById("logPontuacao").value;
 
-        for (let i = 0; i < agente.posicoesOuro.length; i++) {
-            agente.posicoesOuro[i][2] = true;
+        for (let i = 0; i < agente.posicoesObjetivo.length; i++) {
+            agente.posicoesObjetivo[i][2] = true;
         }
 
         agente.pontuacao = 0;
@@ -573,22 +568,23 @@ function rodarGame(mundo) {
         posicoesOuro.push([agente.x, agente.y]);
 
         let posicaoExiste = false;
-        for (let i = 0; i < agente.posicoesOuro.length; i++) {
+        for (let i = 0; i < agente.posicoesObjetivo.length; i++) {
             // se a posicao ja existe
-            if (agente.posicoesOuro[i][0] == agente.x && agente.posicoesOuro[i][1] == agente.y) {
+            if (agente.posicoesObjetivo[i][0] == agente.x && agente.posicoesObjetivo[i][1] == agente.y) {
                 posicaoExiste = true;
             }
         }
 
         if (!posicaoExiste) {
-            agente.posicoesOuro.push([agente.x, agente.y, false]);
+            agente.posicoesObjetivo.push([agente.x, agente.y, false]);
         } else {
-            for (let i = 0; i < agente.posicoesOuro.length; i++) {
-                if (agente.posicoesOuro[i][0] == agente.x && agente.posicoesOuro[i][1] == agente.y) {
-                    agente.posicoesOuro[i][2] = false;
+            for (let i = 0; i < agente.posicoesObjetivo.length; i++) {
+                if (agente.posicoesObjetivo[i][0] == agente.x && agente.posicoesObjetivo[i][1] == agente.y) {
+                    agente.posicoesObjetivo[i][2] = false;
                 }
             }
         }
+
 
         mundo.mundo[agente.x][agente.y].ouro = false;
         agente.ouro += 1;
@@ -613,8 +609,8 @@ function rodarGame(mundo) {
             agente.pontuacao += 1000;
             agente.ouro = 0;
 
-            for (let i = 0; i < agente.posicoesOuro.length; i++) {
-                agente.posicoesOuro[i][2] = true;
+            for (let i = 0; i < agente.posicoesObjetivo.length; i++) {
+                agente.posicoesObjetivo[i][2] = true;
             }
 
             agente.pilhaDeMovimentos = [];
@@ -635,6 +631,10 @@ function rodarGame(mundo) {
     } else {
         document.getElementById(agente.x + "," + agente.y).innerHTML += "<img src=\"textures/linoAgente.png\" id=\"agente\" alt=\"\">";
     }
+
+    agente.posicoesObjetivo.sort((a, b) =>
+        (b[2] - a[2]) || (a[0] - b[0]) || (a[1] - b[1])
+    );
 }
 
 function rodarGameManual(direcao, mundo) {
