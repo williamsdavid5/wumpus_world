@@ -421,6 +421,7 @@ function verificarCaminho(x, y, agente, mundo) {
             for (let i = 0; i < agente.posicoesObjetivo.length; i++) {
                 if (agente.posicoesObjetivo[i][0] == x && agente.posicoesObjetivo[i][1] == y) {
                     agente.posicoesObjetivo[i][2] = false;
+                    break;
                 }
             }
 
@@ -518,6 +519,10 @@ function rodarGame(mundo) {
     if (mundo.mundo[agente.x][agente.y].wumpus) {
         if (mundo.mundo[agente.x][agente.y].wumpus.vivo) {
 
+            for (let i = 0; i < agente.posicoesObjetivo.length; i++) {
+                agente.posicoesObjetivo[i][2] = true;
+            }
+
             agente.posicoesObjetivo.push([agente.x, agente.y, true]);
 
             agente.x = agente.y = 0;
@@ -572,6 +577,7 @@ function rodarGame(mundo) {
             // se a posicao ja existe
             if (agente.posicoesObjetivo[i][0] == agente.x && agente.posicoesObjetivo[i][1] == agente.y) {
                 posicaoExiste = true;
+                break;
             }
         }
 
@@ -581,6 +587,7 @@ function rodarGame(mundo) {
             for (let i = 0; i < agente.posicoesObjetivo.length; i++) {
                 if (agente.posicoesObjetivo[i][0] == agente.x && agente.posicoesObjetivo[i][1] == agente.y) {
                     agente.posicoesObjetivo[i][2] = false;
+                    break;
                 }
             }
         }
