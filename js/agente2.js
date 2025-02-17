@@ -464,7 +464,21 @@ function rodarGame(mundo) {
     }
 
     let ultimoMovimento = agente.pilhaDeMovimentos[agente.pilhaDeMovimentos.length - 1];
-    if (!padraoDeMovimentos && agente.carregandoOuro > 0) {
+
+    if (!padraoDeMovimentos && ouroNoMapa) {
+        if (agente.y < posicaoOuroNoMapa[1] && verificarCaminho(agente.x, agente.y + 1, agente, mundo) && ultimoMovimento !== "O") {
+            agente.moverLeste();
+        } else if (agente.x < posicaoOuroNoMapa[0] && verificarCaminho(agente.x + 1, agente.y, agente, mundo) && ultimoMovimento !== "N") {
+            agente.moverSul();
+        } else if (agente.y > posicaoOuroNoMapa[1] && verificarCaminho(agente.x, agente.y - 1, agente, mundo) && ultimoMovimento !== "L") {
+            agente.moverOeste();
+        } else if (agente.x > posicaoOuroNoMapa[0] && verificarCaminho(agente.x - 1, agente.y, agente, mundo) && ultimoMovimento !== "S") {
+            agente.moverNorte();
+        }
+    }
+
+
+    else if (!padraoDeMovimentos && agente.carregandoOuro > 0) {
 
         if (verificarCaminho(agente.x - 1, agente.y, agente, mundo) && ultimoMovimento !== "S") {
             agente.moverNorte();
@@ -478,18 +492,6 @@ function rodarGame(mundo) {
             agente.pilhaDeMovimentos = [];
         }
     }
-
-
-    else if (!padraoDeMovimentos && ouroNoMapa && agente.y < posicaoOuroNoMapa[1] && verificarCaminho(agente.x, agente.y + 1, agente, mundo) && ultimoMovimento !== "O") {
-        agente.moverLeste();
-    } else if (!padraoDeMovimentos && ouroNoMapa && agente.x < posicaoOuroNoMapa[0] && verificarCaminho(agente.x + 1, agente.y, agente, mundo) && ultimoMovimento !== "N") {
-        agente.moverSul();
-    } else if (!padraoDeMovimentos && ouroNoMapa && agente.y > posicaoOuroNoMapa[1] && verificarCaminho(agente.x, agente.y - 1, agente, mundo) && ultimoMovimento !== "L") {
-        agente.moverOeste();
-    } else if (!padraoDeMovimentos && ouroNoMapa && agente.x > posicaoOuroNoMapa[0] && verificarCaminho(agente.x - 1, agente.y, agente, mundo) && ultimoMovimento !== "S") {
-        agente.moverNorte();
-    }
-
 
     else {
         let movimentos = [];
