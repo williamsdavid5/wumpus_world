@@ -447,6 +447,7 @@ function rodarGame(mundo) {
 
     let padraoDeMovimentos = false;
 
+    // regex que verifica se ha algum padrao nos ultimos movimentos do agente
     if (agente.pilhaDeMovimentos.length >= 4) {
         let movimentos = agente.pilhaDeMovimentos.slice(-12).join("");
         let expressaoRegex = new RegExp(/(.{3,}.*)\1+/);
@@ -458,59 +459,105 @@ function rodarGame(mundo) {
 
     }
 
-    let ouroNoMapa = false;
-    let posicaoOuroNoMapa = [];
+    // trecho que verifica se o agente possui objetivos pendentes no mapa
+    let objetivoNoMapa = false;
+    let posicaoObjetivoNoMapa = [];
 
     if (agente.posicoesObjetivo.length > 0) {
         for (let i = 0; i < agente.posicoesObjetivo.length; i++) {
             if (agente.posicoesObjetivo[i][2]) {
-                ouroNoMapa = true;
-                posicaoOuroNoMapa = agente.posicoesObjetivo[i];
+                objetivoNoMapa = true;
+                posicaoObjetivoNoMapa = agente.posicoesObjetivo[i];
                 break;
             }
         }
     }
 
+    let haSalasPendentes = false;
+    let salaPosicao = [];
+    for (let x = 0; x < agente.mundoImaginario.length; x++) {
+        for (let y = 0; y < agente.mundoImaginario.length; y++) {
+            if (!agente.mundoImaginario[x][y].passou && !objetivoNoMapa && !agente.carregandoOuro) {
+                haSalasPendentes = true;
+                salaPosicao = [x, y];
+                break;
+            }
+        }
+    }
+
+
     let ultimoMovimento = agente.pilhaDeMovimentos[agente.pilhaDeMovimentos.length - 1];
 
-
-    if (!padraoDeMovimentos && ouroNoMapa && agente.y < posicaoOuroNoMapa[1] && verificarCaminho(agente.x, agente.y + 1, agente, mundo) && ultimoMovimento !== "O") {
+    //se o agente possui coordenadas de um objetivo
+    if (!padraoDeMovimentos && objetivoNoMapa && agente.y < posicaoObjetivoNoMapa[1] && verificarCaminho(agente.x, agente.y + 1, agente, mundo) && ultimoMovimento !== "O") {
         agente.moverLeste();
-    } else if (!padraoDeMovimentos && ouroNoMapa && agente.x < posicaoOuroNoMapa[0] && verificarCaminho(agente.x + 1, agente.y, agente, mundo) && ultimoMovimento !== "N") {
+    } else if (!padraoDeMovimentos && objetivoNoMapa && agente.x < posicaoObjetivoNoMapa[0] && verificarCaminho(agente.x + 1, agente.y, agente, mundo) && ultimoMovimento !== "N") {
         agente.moverSul();
-    } else if (!padraoDeMovimentos && ouroNoMapa && agente.y > posicaoOuroNoMapa[1] && verificarCaminho(agente.x, agente.y - 1, agente, mundo) && ultimoMovimento !== "L") {
+    } else if (!padraoDeMovimentos && objetivoNoMapa && agente.y > posicaoObjetivoNoMapa[1] && verificarCaminho(agente.x, agente.y - 1, agente, mundo) && ultimoMovimento !== "L") {
         agente.moverOeste();
-    } else if (!padraoDeMovimentos && ouroNoMapa && agente.x > posicaoOuroNoMapa[0] && verificarCaminho(agente.x - 1, agente.y, agente, mundo) && ultimoMovimento !== "S") {
+    } else if (!padraoDeMovimentos && objetivoNoMapa && agente.x > posicaoObjetivoNoMapa[0] && verificarCaminho(agente.x - 1, agente.y, agente, mundo) && ultimoMovimento !== "S") {
         agente.moverNorte();
-    } else if (!padraoDeMovimentos && agente.carregandoOuro > 0 && verificarCaminho(agente.x - 1, agente.y, agente, mundo) && ultimoMovimento !== "S") {
-        agente.moverNorte();
-    } else if (!padraoDeMovimentos && agente.carregandoOuro > 0 && verificarCaminho(agente.x, agente.y - 1, agente, mundo) && ultimoMovimento !== "L") {
-        agente.moverOeste();
-    } else if (!padraoDeMovimentos && agente.carregandoOuro > 0 && verificarCaminho(agente.x + 1, agente.y, agente, mundo) && ultimoMovimento !== "N") {
-        agente.moverSul();
-    } else if (!padraoDeMovimentos && agente.carregandoOuro > 0 && verificarCaminho(agente.x, agente.y + 1, agente, mundo) && ultimoMovimento !== "O") {
-        agente.moverLeste();
-    } else {
-        let movimentos = [];
+    } else
 
-        if (verificarCaminho(agente.x - 1, agente.y, agente, mundo)) {
-            movimentos.push(() => agente.moverNorte());
+        //se o agente nao possui mais coordenadas de objetivo, mas esta carregando ouro, ele vai para a origem
+        if (!padraoDeMovimentos && agente.carregandoOuro > 0 && verificarCaminho(agente.x - 1, agente.y, agente, mundo) && ultimoMovimento !== "S") {
+            agente.moverNorte();
+        } else if (!padraoDeMovimentos && agente.carregandoOuro > 0 && verificarCaminho(agente.x, agente.y - 1, agente, mundo) && ultimoMovimento !== "L") {
+            agente.moverOeste();
+        } else if (!padraoDeMovimentos && agente.carregandoOuro > 0 && verificarCaminho(agente.x + 1, agente.y, agente, mundo) && ultimoMovimento !== "N") {
+            agente.moverSul();
+        } else if (!padraoDeMovimentos && agente.carregandoOuro > 0 && verificarCaminho(agente.x, agente.y + 1, agente, mundo) && ultimoMovimento !== "O") {
+            agente.moverLeste();
         }
 
-        if (verificarCaminho(agente.x + 1, agente.y, agente, mundo)) {
-            movimentos.push(() => agente.moverSul());
+        //se o agente nao possui objetivo e nao esta carregando ouro
+        else if (!padraoDeMovimentos && haSalasPendentes && agente.y < salaPosicao[1] && verificarCaminho(agente.x, agente.y + 1, agente, mundo) && ultimoMovimento !== "O") {
+            agente.moverLeste();
+        } else if (!padraoDeMovimentos && haSalasPendentes && agente.x < salaPosicao[0] && verificarCaminho(agente.x + 1, agente.y, agente, mundo) && ultimoMovimento !== "N") {
+            agente.moverSul();
+        } else if (!padraoDeMovimentos && haSalasPendentes && agente.y > salaPosicao[1] && verificarCaminho(agente.x, agente.y - 1, agente, mundo) && ultimoMovimento !== "L") {
+            agente.moverOeste();
+        } else if (!padraoDeMovimentos && haSalasPendentes && agente.x > salaPosicao[0] && verificarCaminho(agente.x - 1, agente.y, agente, mundo) && ultimoMovimento !== "S") {
+            agente.moverNorte();
         }
 
-        if (verificarCaminho(agente.x, agente.y + 1, agente, mundo)) {
-            movimentos.push(() => agente.moverLeste());
-        }
 
-        if (verificarCaminho(agente.x, agente.y - 1, agente, mundo)) {
-            movimentos.push(() => agente.moverOeste());
-        }
+        else {
+            if (verificarCaminho(agente.x, agente.y + 1, agente, mundo)) {
+                agente.moverLeste();
+            }
 
-        movimentos[Math.floor(Math.random() * movimentos.length)]();
-    }
+            else if (verificarCaminho(agente.x + 1, agente.y, agente, mundo)) {
+                agente.moverSul();
+            }
+
+            else if (verificarCaminho(agente.x, agente.y - 1, agente, mundo)) {
+                agente.moverOeste();
+            }
+            else if (verificarCaminho(agente.x - 1, agente.y, agente, mundo)) {
+                agente.moverNorte();
+            }
+
+            // let movimentos = [];
+
+            // if (verificarCaminho(agente.x - 1, agente.y, agente, mundo)) {
+            //     movimentos.push(() => agente.moverNorte());
+            // }
+
+            // if (verificarCaminho(agente.x + 1, agente.y, agente, mundo)) {
+            //     movimentos.push(() => agente.moverSul());
+            // }
+
+            // if (verificarCaminho(agente.x, agente.y + 1, agente, mundo)) {
+            //     movimentos.push(() => agente.moverLeste());
+            // }
+
+            // if (verificarCaminho(agente.x, agente.y - 1, agente, mundo)) {
+            //     movimentos.push(() => agente.moverOeste());
+            // }
+
+            // movimentos[Math.floor(Math.random() * movimentos.length)]();
+        }
 
     agente.pontuacao -= 1;
     document.getElementById("pontuacao").textContent = agente.pontuacao;
