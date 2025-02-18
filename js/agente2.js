@@ -521,43 +521,40 @@ function rodarGame(mundo) {
             agente.moverNorte();
         }
 
-
-        else {
-            if (verificarCaminho(agente.x, agente.y + 1, agente, mundo)) {
-                agente.moverLeste();
-            }
-
-            else if (verificarCaminho(agente.x + 1, agente.y, agente, mundo)) {
-                agente.moverSul();
-            }
-
-            else if (verificarCaminho(agente.x, agente.y - 1, agente, mundo)) {
-                agente.moverOeste();
-            }
-            else if (verificarCaminho(agente.x - 1, agente.y, agente, mundo)) {
-                agente.moverNorte();
-            }
-
-            // let movimentos = [];
-
-            // if (verificarCaminho(agente.x - 1, agente.y, agente, mundo)) {
-            //     movimentos.push(() => agente.moverNorte());
-            // }
-
-            // if (verificarCaminho(agente.x + 1, agente.y, agente, mundo)) {
-            //     movimentos.push(() => agente.moverSul());
-            // }
-
-            // if (verificarCaminho(agente.x, agente.y + 1, agente, mundo)) {
-            //     movimentos.push(() => agente.moverLeste());
-            // }
-
-            // if (verificarCaminho(agente.x, agente.y - 1, agente, mundo)) {
-            //     movimentos.push(() => agente.moverOeste());
-            // }
-
-            // movimentos[Math.floor(Math.random() * movimentos.length)]();
+        //se o agente nao possui objetivo, nao esta carregando ouro e ja explorou todas as posicoes que ele sabia da existencia
+        else if (!padraoDeMovimentos && verificarCaminho(agente.x, agente.y + 1, agente, mundo)) {
+            agente.moverLeste();
         }
+        else if (!padraoDeMovimentos && verificarCaminho(agente.x + 1, agente.y, agente, mundo)) {
+            agente.moverSul();
+        }
+        else if (!padraoDeMovimentos && verificarCaminho(agente.x, agente.y - 1, agente, mundo)) {
+            agente.moverOeste();
+        }
+        else if (!padraoDeMovimentos && verificarCaminho(agente.x - 1, agente.y, agente, mundo)) {
+            agente.moverNorte();
+        } else {
+            let movimentos = [];
+
+            if (verificarCaminho(agente.x - 1, agente.y, agente, mundo)) {
+                movimentos.push(() => agente.moverNorte());
+            }
+
+            if (verificarCaminho(agente.x + 1, agente.y, agente, mundo)) {
+                movimentos.push(() => agente.moverSul());
+            }
+
+            if (verificarCaminho(agente.x, agente.y + 1, agente, mundo)) {
+                movimentos.push(() => agente.moverLeste());
+            }
+
+            if (verificarCaminho(agente.x, agente.y - 1, agente, mundo)) {
+                movimentos.push(() => agente.moverOeste());
+            }
+
+            movimentos[Math.floor(Math.random() * movimentos.length)]();
+        }
+
 
     agente.pontuacao -= 1;
     document.getElementById("pontuacao").textContent = agente.pontuacao;
