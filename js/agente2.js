@@ -493,7 +493,23 @@ function rodarGame(mundo) {
         let expressaoRegexMovimentoLinear = new RegExp(/(.)\1{4,}/);
 
         if (!expressaoRegexMovimentoLinear.test(movimentos)) {
-            padraoDeMovimentos = expressaoRegex.test(movimentos);
+            if (expressaoRegex.test(movimentos)) {
+                padraoDeMovimentos = expressaoRegex.test(movimentos);
+                agente.pilhaDeMovimentos = [agente.pilhaDeMovimentos.at(-1)];
+
+            } else {
+                expressaoRegex = new RegExp(/(.{4,}?)(?:\1)+/);
+
+                movimentos = agente.pilhaDeMovimentos.slice(-50).join("");
+                padraoDeMovimentos = expressaoRegex.test(movimentos);
+                if (padraoDeMovimentos) {
+                    console.log("padrao maior -------------------------------------------------------------");
+                    console.log(movimentos);
+                    agente.pilhaDeMovimentos = [agente.pilhaDeMovimentos.at(-1)];
+
+                }
+            }
+
         }
 
     }
@@ -557,7 +573,6 @@ function rodarGame(mundo) {
                     agente.mundoImaginario[x][y].suspeita = false;
                     agente.listaBrancaSuspeita.push([x, y]);
                     console.log(`Removendo suspeita de (${x}, ${y}) e adicionando à lista branca.`);
-                    console.log("----------------------------------------");
                 }
             }
         }
@@ -859,31 +874,6 @@ function rodarGame(mundo) {
         (b[2] - a[2]) || (a[0] - b[0]) || (a[1] - b[1])
     );
 }
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-document.addEventListener("keydown", function (event) {
-    let direcao = null;
-
-    switch (event.key) {
-        case "ArrowUp":
-            direcao = "norte";
-            break;
-
-        case "ArrowDown":
-            direcao = "sul";
-            break;
-
-        case "ArrowRight":
-            direcao = "leste";
-            break;
-
-        case "ArrowLeft":
-            direcao = "oeste";
-            break;
-    }
-
-    rodarGameManual(direcao, mundo);
-});
-
 function agenteClique() {
     rodarGame(mundo)
 }
