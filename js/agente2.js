@@ -9,6 +9,7 @@ class Sala {
         this.ouro = false;
         this.temOuro = false;
         this.passou = false;
+        this.suspeita = false;
 
         this.norte = null;
         this.sull = null;
@@ -16,13 +17,13 @@ class Sala {
         this.oeste = null;
     }
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class Wumpus {
     constructor() {
         this.vivo = true;
     }
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class Agente {
     constructor(flecha, mundo) {
         this.flechas = flecha;
@@ -41,6 +42,7 @@ class Agente {
         this.pontuacao = 0;
 
         this.pilhaDeMovimentos = [];
+        this.listaBrancaSuspeita = [];
 
         // this.tamanhoMundoImaginario = 1;
         this.mundoImaginario = [[this.mundo[0][0]]];
@@ -173,7 +175,7 @@ class Agente {
         }
     }
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class Mundo {
     constructor(d) {
         this.mundo = [];
@@ -257,7 +259,7 @@ class Mundo {
         });
     }
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function renderizarMapaImaginario(mapaTamanho, d, mundo, mapaId) {
     let mapa = document.getElementById(mapaId);
     mapa.innerHTML = "";
@@ -276,6 +278,10 @@ function renderizarMapaImaginario(mapaTamanho, d, mundo, mapaId) {
 
             if (mundo[x][y].passou) {
                 salaDiv.className += " passou";
+            }
+
+            if (mundo[x][y].suspeita) {
+                salaDiv.className += " suspeita";
             }
 
             if (mundo[x][y].buraco) {
@@ -315,7 +321,7 @@ function renderizarMapaImaginario(mapaTamanho, d, mundo, mapaId) {
         }
     }
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function renderizarMapa(mapaTamanho, d, mundo, mapaId) {
     let mapa = document.getElementById(mapaId);
     mapa.style.width = d * mapaTamanho + 'px';
@@ -377,7 +383,7 @@ function renderizarMapa(mapaTamanho, d, mundo, mapaId) {
         }
     }
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function restaurarMundo(mundo, posicoesOuro, posicoesWumpus, agente) {
     posicoesOuro.forEach(([x, y]) => {
         mundo[x][y].ouro = true;
@@ -395,7 +401,7 @@ function restaurarMundo(mundo, posicoesOuro, posicoesWumpus, agente) {
     posicoesOuro.length = 0;
     agente.imaginarMundo(0);
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function verificarCaminho(x, y, agente, mundo) {
     let mover = true;
 
@@ -437,6 +443,23 @@ function verificarCaminho(x, y, agente, mundo) {
     return mover;
 }
 
+function verificarSuspeita(x, y, agente) {
+    // let salaSuspeita = true;
+
+    // for (let i = 0; i < agente.listaBrancaSuspeita.length; i++) {
+    //     if (x == agente.listaBrancaSuspeita[i][0] && y == agente.listaBrancaSuspeita[i][1]) {
+    //         return false;
+    //     }
+    // }
+
+    agente.imaginarMundo(x > y ? x : y);
+
+    salaSuspeita = agente.mundoImaginario[x][y].suspeita
+
+    return salaSuspeita;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function rodarGame(mundo) {
     document.getElementById("agente").remove();
 
@@ -475,85 +498,140 @@ function rodarGame(mundo) {
 
     let haSalasPendentes = false;
     let salaPosicao = [];
+
+    buscaSalas: // Label para o break
     for (let x = 0; x < agente.mundoImaginario.length; x++) {
-        for (let y = 0; y < agente.mundoImaginario.length; y++) {
-            if (!agente.mundoImaginario[x][y].passou && !objetivoNoMapa && !agente.carregandoOuro) {
+        for (let y = 0; y < agente.mundoImaginario[x].length; y++) {
+            if (!agente.mundoImaginario[x][y].passou && !objetivoNoMapa && !agente.carregandoOuro && !agente.mundoImaginario[x][y].suspeita) {
                 haSalasPendentes = true;
                 salaPosicao = [x, y];
-                break;
+                break buscaSalas;
             }
         }
     }
 
+    //busca na memoria do agente por falsas acusacoes de suspeita
+    for (let x = 0; x < agente.mundoImaginario.length; x++) {
+        for (let y = 0; y < agente.mundoImaginario[x].length; y++) {
+            if (agente.mundoImaginario[x][y].suspeita) {
+                let removerSuspeita = false;
+
+                const direcoes = [
+                    [x - 1, y], // Norte
+                    [x + 1, y], // Sul
+                    [x, y + 1], // Leste
+                    [x, y - 1]  // Oeste
+                ];
+
+                for (let [dx, dy] of direcoes) {
+                    if (
+                        dx >= 0 && dx < agente.mundoImaginario.length &&
+                        dy >= 0 && dy < agente.mundoImaginario[dx].length &&
+                        agente.mundoImaginario[dx][dy].passou &&
+                        !mundo.mundo[dx][dy].brisa
+                    ) {
+                        removerSuspeita = true;
+                        break;
+                    }
+                }
+
+                if (removerSuspeita) {
+                    agente.mundoImaginario[x][y].suspeita = false;
+                    agente.listaBrancaSuspeita.push([x, y]);
+                    console.log(`Removendo suspeita de (${x}, ${y}) e adicionando à lista branca.`);
+                    console.log("----------------------------------------");
+                }
+            }
+        }
+    }
+    agente.imaginarMundo(agente.x);
+
 
     let ultimoMovimento = agente.pilhaDeMovimentos[agente.pilhaDeMovimentos.length - 1];
 
-    //se o agente possui coordenadas de um objetivo
-    if (!padraoDeMovimentos && objetivoNoMapa && agente.y < posicaoObjetivoNoMapa[1] && verificarCaminho(agente.x, agente.y + 1, agente, mundo) && ultimoMovimento !== "O") {
+    // Se o agente possui coordenadas de um objetivo
+    if (!padraoDeMovimentos && objetivoNoMapa && agente.y < posicaoObjetivoNoMapa[1] && verificarCaminho(agente.x, agente.y + 1, agente, mundo) && !verificarSuspeita(agente.x, agente.y + 1, agente) && ultimoMovimento !== "O") {
+        console.log("Buscando objetivo: movendo para Leste");
         agente.moverLeste();
-    } else if (!padraoDeMovimentos && objetivoNoMapa && agente.x < posicaoObjetivoNoMapa[0] && verificarCaminho(agente.x + 1, agente.y, agente, mundo) && ultimoMovimento !== "N") {
+    } else if (!padraoDeMovimentos && objetivoNoMapa && agente.x < posicaoObjetivoNoMapa[0] && verificarCaminho(agente.x + 1, agente.y, agente, mundo) && !verificarSuspeita(agente.x + 1, agente.y, agente) && ultimoMovimento !== "N") {
+        console.log("Buscando objetivo: movendo para Sul");
         agente.moverSul();
-    } else if (!padraoDeMovimentos && objetivoNoMapa && agente.y > posicaoObjetivoNoMapa[1] && verificarCaminho(agente.x, agente.y - 1, agente, mundo) && ultimoMovimento !== "L") {
+    } else if (!padraoDeMovimentos && objetivoNoMapa && agente.y > posicaoObjetivoNoMapa[1] && verificarCaminho(agente.x, agente.y - 1, agente, mundo) && !verificarSuspeita(agente.x, agente.y - 1, agente) && ultimoMovimento !== "L") {
+        console.log("Buscando objetivo: movendo para Oeste");
         agente.moverOeste();
-    } else if (!padraoDeMovimentos && objetivoNoMapa && agente.x > posicaoObjetivoNoMapa[0] && verificarCaminho(agente.x - 1, agente.y, agente, mundo) && ultimoMovimento !== "S") {
+    } else if (!padraoDeMovimentos && objetivoNoMapa && agente.x > posicaoObjetivoNoMapa[0] && verificarCaminho(agente.x - 1, agente.y, agente, mundo) && !verificarSuspeita(agente.x - 1, agente.y, agente) && ultimoMovimento !== "S") {
+        console.log("Buscando objetivo: movendo para Norte");
         agente.moverNorte();
-    } else
+    }
 
-        //se o agente nao possui mais coordenadas de objetivo, mas esta carregando ouro, ele vai para a origem
-        if (!padraoDeMovimentos && agente.carregandoOuro > 0 && verificarCaminho(agente.x - 1, agente.y, agente, mundo) && ultimoMovimento !== "S") {
-            agente.moverNorte();
-        } else if (!padraoDeMovimentos && agente.carregandoOuro > 0 && verificarCaminho(agente.x, agente.y - 1, agente, mundo) && ultimoMovimento !== "L") {
-            agente.moverOeste();
-        } else if (!padraoDeMovimentos && agente.carregandoOuro > 0 && verificarCaminho(agente.x + 1, agente.y, agente, mundo) && ultimoMovimento !== "N") {
-            agente.moverSul();
-        } else if (!padraoDeMovimentos && agente.carregandoOuro > 0 && verificarCaminho(agente.x, agente.y + 1, agente, mundo) && ultimoMovimento !== "O") {
-            agente.moverLeste();
+    // Voltando para a origem com ouro
+    else if (!padraoDeMovimentos && agente.carregandoOuro > 0 && verificarCaminho(agente.x - 1, agente.y, agente, mundo) && !verificarSuspeita(agente.x - 1, agente.y, agente) && ultimoMovimento !== "S") {
+        console.log("Voltando para a origem com ouro: movendo para Norte");
+        agente.moverNorte();
+    } else if (!padraoDeMovimentos && agente.carregandoOuro > 0 && verificarCaminho(agente.x, agente.y - 1, agente, mundo) && !verificarSuspeita(agente.x, agente.y - 1, agente) && ultimoMovimento !== "L") {
+        console.log("Voltando para a origem com ouro: movendo para Oeste");
+        agente.moverOeste();
+    } else if (!padraoDeMovimentos && agente.carregandoOuro > 0 && verificarCaminho(agente.x + 1, agente.y, agente, mundo) && !verificarSuspeita(agente.x + 1, agente.y, agente) && ultimoMovimento !== "N") {
+        console.log("Voltando para a origem com ouro: movendo para Sul");
+        agente.moverSul();
+    } else if (!padraoDeMovimentos && agente.carregandoOuro > 0 && verificarCaminho(agente.x, agente.y + 1, agente, mundo) && !verificarSuspeita(agente.x, agente.y + 1, agente) && ultimoMovimento !== "O") {
+        console.log("Voltando para a origem com ouro: movendo para Leste");
+        agente.moverLeste();
+    }
+
+    // Buscando salas pendentes
+    else if (!padraoDeMovimentos && haSalasPendentes && agente.y < salaPosicao[1] && verificarCaminho(agente.x, agente.y + 1, agente, mundo) && !verificarSuspeita(agente.x, agente.y + 1, agente) && ultimoMovimento !== "O") {
+        console.log("Buscando salas pendentes: movendo para Leste");
+        agente.moverLeste();
+    } else if (!padraoDeMovimentos && haSalasPendentes && agente.x < salaPosicao[0] && verificarCaminho(agente.x + 1, agente.y, agente, mundo) && !verificarSuspeita(agente.x + 1, agente.y, agente) && ultimoMovimento !== "N") {
+        console.log("Buscando salas pendentes: movendo para Sul");
+        agente.moverSul();
+    } else if (!padraoDeMovimentos && haSalasPendentes && agente.y > salaPosicao[1] && verificarCaminho(agente.x, agente.y - 1, agente, mundo) && !verificarSuspeita(agente.x, agente.y - 1, agente) && ultimoMovimento !== "L") {
+        console.log("Buscando salas pendentes: movendo para Oeste");
+        agente.moverOeste();
+    } else if (!padraoDeMovimentos && haSalasPendentes && agente.x > salaPosicao[0] && verificarCaminho(agente.x - 1, agente.y, agente, mundo) && !verificarSuspeita(agente.x - 1, agente.y, agente) && ultimoMovimento !== "S") {
+        console.log("Buscando salas pendentes: movendo para Norte");
+        agente.moverNorte();
+    }
+
+    // Expandindo o mundo
+    else if (!padraoDeMovimentos && verificarCaminho(agente.x, agente.y + 1, agente, mundo) && !verificarSuspeita(agente.x, agente.y + 1, agente)) {
+        console.log("Expandindo o mundo: movendo para Leste");
+        agente.moverLeste();
+    } else if (!padraoDeMovimentos && verificarCaminho(agente.x + 1, agente.y, agente, mundo) && !verificarSuspeita(agente.x + 1, agente.y, agente)) {
+        console.log("Expandindo o mundo: movendo para Sul");
+        agente.moverSul();
+    } else if (!padraoDeMovimentos && verificarCaminho(agente.x, agente.y - 1, agente, mundo) && !verificarSuspeita(agente.x, agente.y - 1, agente)) {
+        console.log("Expandindo o mundo: movendo para Oeste");
+        agente.moverOeste();
+    } else if (!padraoDeMovimentos && verificarCaminho(agente.x - 1, agente.y, agente, mundo) && !verificarSuspeita(agente.x - 1, agente.y, agente)) {
+        console.log("Expandindo o mundo: movendo para Norte");
+        agente.moverNorte();
+    }
+
+    // Movimento aleatório
+    else {
+        let movimentos = [];
+
+        if (verificarCaminho(agente.x - 1, agente.y, agente, mundo)) {
+            movimentos.push(() => { console.log("Moveu aleatório: Norte"); agente.moverNorte(); });
         }
 
-        //se o agente nao possui objetivo e nao esta carregando ouro
-        else if (!padraoDeMovimentos && haSalasPendentes && agente.y < salaPosicao[1] && verificarCaminho(agente.x, agente.y + 1, agente, mundo) && ultimoMovimento !== "O") {
-            agente.moverLeste();
-        } else if (!padraoDeMovimentos && haSalasPendentes && agente.x < salaPosicao[0] && verificarCaminho(agente.x + 1, agente.y, agente, mundo) && ultimoMovimento !== "N") {
-            agente.moverSul();
-        } else if (!padraoDeMovimentos && haSalasPendentes && agente.y > salaPosicao[1] && verificarCaminho(agente.x, agente.y - 1, agente, mundo) && ultimoMovimento !== "L") {
-            agente.moverOeste();
-        } else if (!padraoDeMovimentos && haSalasPendentes && agente.x > salaPosicao[0] && verificarCaminho(agente.x - 1, agente.y, agente, mundo) && ultimoMovimento !== "S") {
-            agente.moverNorte();
+        if (verificarCaminho(agente.x + 1, agente.y, agente, mundo)) {
+            movimentos.push(() => { console.log("Moveu aleatório: Sul"); agente.moverSul(); });
         }
 
-        //se o agente nao possui objetivo, nao esta carregando ouro e ja explorou todas as posicoes que ele sabia da existencia
-        else if (!padraoDeMovimentos && verificarCaminho(agente.x, agente.y + 1, agente, mundo)) {
-            agente.moverLeste();
+        if (verificarCaminho(agente.x, agente.y + 1, agente, mundo)) {
+            movimentos.push(() => { console.log("Moveu aleatório: Leste"); agente.moverLeste(); });
         }
-        else if (!padraoDeMovimentos && verificarCaminho(agente.x + 1, agente.y, agente, mundo)) {
-            agente.moverSul();
+
+        if (verificarCaminho(agente.x, agente.y - 1, agente, mundo)) {
+            movimentos.push(() => { console.log("Moveu aleatório: Oeste"); agente.moverOeste(); });
         }
-        else if (!padraoDeMovimentos && verificarCaminho(agente.x, agente.y - 1, agente, mundo)) {
-            agente.moverOeste();
-        }
-        else if (!padraoDeMovimentos && verificarCaminho(agente.x - 1, agente.y, agente, mundo)) {
-            agente.moverNorte();
-        } else {
-            let movimentos = [];
 
-            if (verificarCaminho(agente.x - 1, agente.y, agente, mundo)) {
-                movimentos.push(() => agente.moverNorte());
-            }
+        movimentos[Math.floor(Math.random() * movimentos.length)]();
+    }
 
-            if (verificarCaminho(agente.x + 1, agente.y, agente, mundo)) {
-                movimentos.push(() => agente.moverSul());
-            }
-
-            if (verificarCaminho(agente.x, agente.y + 1, agente, mundo)) {
-                movimentos.push(() => agente.moverLeste());
-            }
-
-            if (verificarCaminho(agente.x, agente.y - 1, agente, mundo)) {
-                movimentos.push(() => agente.moverOeste());
-            }
-
-            movimentos[Math.floor(Math.random() * movimentos.length)]();
-        }
 
 
     agente.pontuacao -= 1;
@@ -646,6 +724,78 @@ function rodarGame(mundo) {
         document.getElementById("pontuacao").textContent = agente.pontuacao;
     }
 
+    if (mundo.mundo[agente.x][agente.y].brisa) {
+
+        if (verificarCaminho(agente.x - 1, agente.y, agente, mundo)) {
+            agente.imaginarMundo(agente.x - 1);
+            if (!agente.mundoImaginario[agente.x - 1][agente.y].passou) {
+                let listaBranca = false;
+                for (let i = 0; i < agente.listaBrancaSuspeita.length; i++) {
+                    if (agente.listaBrancaSuspeita[i][0] == agente.x - 1 && agente.listaBrancaSuspeita[i][1] == agente.y) {
+                        listaBranca = true;
+                        break;
+                    }
+                }
+                if (!listaBranca) {
+                    agente.mundoImaginario[agente.x - 1][agente.y].suspeita = true;
+                }
+                console.log("existe norte");
+            }
+        }
+
+        if (verificarCaminho(agente.x + 1, agente.y, agente, mundo)) {
+            agente.imaginarMundo(agente.x + 1);
+            if (!agente.mundoImaginario[agente.x + 1][agente.y].passou) {
+                let listaBranca = false;
+                for (let i = 0; i < agente.listaBrancaSuspeita.length; i++) {
+                    if (agente.listaBrancaSuspeita[i][0] == agente.x + 1 && agente.listaBrancaSuspeita[i][1] == agente.y) {
+                        listaBranca = true;
+                        break;
+                    }
+                }
+                if (!listaBranca) {
+                    agente.mundoImaginario[agente.x + 1][agente.y].suspeita = true;
+                }
+                console.log("existe sul");
+            }
+        }
+
+        if (verificarCaminho(agente.x, agente.y + 1, agente, mundo)) {
+            agente.imaginarMundo(agente.y + 1);
+            if (!agente.mundoImaginario[agente.x][agente.y + 1].passou) {
+                let listaBranca = false;
+                for (let i = 0; i < agente.listaBrancaSuspeita.length; i++) {
+                    if (agente.listaBrancaSuspeita[i][0] == agente.x && agente.listaBrancaSuspeita[i][1] == agente.y + 1) {
+                        listaBranca = true;
+                        break;
+                    }
+                }
+                if (!listaBranca) {
+                    agente.mundoImaginario[agente.x][agente.y + 1].suspeita = true;
+                }
+                console.log("existe leste");
+            }
+        }
+
+        if (verificarCaminho(agente.x, agente.y - 1, agente, mundo)) {
+            agente.imaginarMundo(agente.y - 1);
+            if (!agente.mundoImaginario[agente.x][agente.y - 1].passou) {
+                let listaBranca = false;
+                for (let i = 0; i < agente.listaBrancaSuspeita.length; i++) {
+                    if (agente.listaBrancaSuspeita[i][0] == agente.x && agente.listaBrancaSuspeita[i][1] == agente.y - 1) {
+                        listaBranca = true;
+                        break;
+                    }
+                }
+                if (!listaBranca) {
+                    agente.mundoImaginario[agente.x][agente.y - 1].suspeita = true;
+                }
+                console.log("existe oeste");
+            }
+        }
+    }
+
+
     // chegou em 0,0 com ouro
     if (agente.x == 0 && agente.y == 0) {
         if (agente.carregandoOuro > 0) {
@@ -687,7 +837,7 @@ function rodarGame(mundo) {
         (b[2] - a[2]) || (a[0] - b[0]) || (a[1] - b[1])
     );
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function rodarGameManual(direcao, mundo) {
     document.getElementById("agente").remove();
 
@@ -831,7 +981,7 @@ function rodarGameManual(direcao, mundo) {
 
 
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 document.addEventListener("keydown", function (event) {
     let direcao = null;
 
@@ -859,7 +1009,7 @@ document.addEventListener("keydown", function (event) {
 function agenteClique() {
     rodarGame(mundo)
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 document.getElementById("playPause").addEventListener("click", () => {
     if (rodando) {
         clearInterval(internal);
@@ -876,7 +1026,7 @@ document.getElementById("playPause").addEventListener("click", () => {
     }
     rodando = !rodando;
 });
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 document.getElementById("velocidadeLink").addEventListener("click", () => {
     indiceVelocidade = (indiceVelocidade + 1) % velocidades.length;
 
@@ -889,18 +1039,18 @@ document.getElementById("velocidadeLink").addEventListener("click", () => {
 
     document.getElementById("velocidadeLink").textContent = (velocidades[indiceVelocidade] / 1000).toFixed(1);
 });
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 document.getElementById("atualizarMundo").addEventListener("click", function (event) {
     event.preventDefault();
     location.replace(location.href);
 });
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 document.querySelectorAll('a').forEach(link => {
     link.addEventListener('click', event => {
         event.preventDefault();
     });
 });
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 let d = localStorage.getItem("dimensaoMapa");
 let mapaTamanhoPixels = localStorage.getItem("dimensaoSala");

@@ -13,8 +13,7 @@ p {
     font-size: xx-large;
 }
 
-#mapa,
-#mapaImaginario {
+#mapa {
     /* background-color: white; */
     /* background-image: url(textures/cobbled_deepslate.png); */
     margin-top: 165px;
@@ -42,7 +41,6 @@ p {
 
     background-image: url(../textures/background.png);
     background-size: 100%;
-    border-radius: 5px;
     color: white;
     display: flex;
     justify-content: center;
@@ -254,7 +252,11 @@ p {
 }
 
 .passou {
-    background-color: red;
+    background-color: rgb(0, 38, 151);
+}
+
+.suspeita {
+    background-color: rgb(167, 0, 0);
 }
 
 #mapaImaginarioLabel {
@@ -262,4 +264,17 @@ p {
     margin-left: 900px;
     margin-top: 120px;
     font-size: 40px;
+}
+
+#mapaImaginario {
+    margin-top: 165px;
+    padding: 10px;
+
+}
+
+#mapaImaginario .sala {
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 90%;
+    margin: 2px;
 }
