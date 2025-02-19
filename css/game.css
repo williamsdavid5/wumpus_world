@@ -278,3 +278,7 @@ p {
     background-size: 90%;
     margin: 2px;
 }
+
+.objetivo {
+    background-color: green;
+}
