@@ -450,12 +450,12 @@ function verificarCaminho(x, y, agente, mundo) {
             mundo.mundo[x][y].wumpus.vivo = false;
 
             //se atirou no wumpus, define esse como falso
-            for (let i = 0; i < agente.posicoesObjetivo.length; i++) {
-                if (agente.posicoesObjetivo[i][0] == x && agente.posicoesObjetivo[i][1] == y) {
-                    agente.posicoesObjetivo[i][2] = false;
-                    break;
-                }
-            }
+            // for (let i = 0; i < agente.posicoesObjetivo.length; i++) {
+            //     if (agente.posicoesObjetivo[i][0] == x && agente.posicoesObjetivo[i][1] == y) {
+            //         agente.posicoesObjetivo[i][2] = false;
+            //         break;
+            //     }
+            // }
 
             agente.mundoImaginario[x][y].wumpus.vivo = false;
             mundo.wumpusMortos += 1;
