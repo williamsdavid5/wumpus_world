@@ -526,7 +526,6 @@ function verificarSuspeitaWumpus(x, y, agente, mundo) {
                     salaSuspeita = false;
                     agente.listaBrancaSuspeitaFedor.push([x, y]);
                     console.log(`tiro na sala (${x}, ${y}).`);
-                    console.log("-------------------------------------------------------------");
                 }
             }
         }
@@ -535,26 +534,14 @@ function verificarSuspeitaWumpus(x, y, agente, mundo) {
     return salaSuspeita;
 }
 
-
 function verificarMovimento(x, y, agente, mundo) {
     return verificarCaminho(x, y, agente, mundo) &&
         !verificarSuspeita(x, y, agente) &&
         !verificarSuspeitaWumpus(x, y, agente, mundo);
 }
 
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-function rodarGame(mundo) {
-    document.getElementById("agente").remove();
-
-    let agente = mundo.agente;
-    let posicoesOuro = mundo.posicoesOuro;
-    let ouro = mundo.ouro;
-    let posicoesWumpus = mundo.posicoesWumpus;
-
+function verificarPadraoDeMovimentos(agente) {
     let padraoDeMovimentos = false;
-
-    // regex que verifica se ha algum padrao nos ultimos movimentos do agente
     if (agente.pilhaDeMovimentos.length >= 4) {
         let movimentos = agente.pilhaDeMovimentos.slice(-12).join("");
         let expressaoRegex = new RegExp(/(.{3,}.*)\1+/);
@@ -562,82 +549,71 @@ function rodarGame(mundo) {
 
         if (!expressaoRegexMovimentoLinear.test(movimentos)) {
             if (expressaoRegex.test(movimentos)) {
-                padraoDeMovimentos = expressaoRegex.test(movimentos);
+                padraoDeMovimentos = true;
                 agente.pilhaDeMovimentos = [agente.pilhaDeMovimentos.at(-1)];
-
             } else {
                 expressaoRegex = new RegExp(/(.{4,}?)(?:\1)+/);
-
                 movimentos = agente.pilhaDeMovimentos.slice(-50).join("");
                 padraoDeMovimentos = expressaoRegex.test(movimentos);
                 if (padraoDeMovimentos) {
                     console.log(movimentos);
                     agente.pilhaDeMovimentos = [agente.pilhaDeMovimentos.at(-1)];
-
                 }
             }
-
         }
-
     }
+    return padraoDeMovimentos;
+}
 
-    // trecho que verifica se o agente possui objetivos pendentes no mapa
+function verificarObjetivosNoMapa(agente) {
     let objetivoNoMapa = false;
     let posicaoObjetivoNoMapa = [];
 
-    if (agente.posicoesObjetivo.length > 0) {
-        for (let i = 0; i < agente.posicoesObjetivo.length; i++) {
-            if (agente.posicoesObjetivo[i][2]) {
-                objetivoNoMapa = true;
-                posicaoObjetivoNoMapa = agente.posicoesObjetivo[i];
-                break;
-            }
+    for (let obj of agente.posicoesObjetivo) {
+        if (obj[2]) {
+            objetivoNoMapa = true;
+            posicaoObjetivoNoMapa = obj;
+            break;
         }
     }
 
+    return { objetivoNoMapa, posicaoObjetivoNoMapa };
+}
+
+function buscarSalasPendentes(agente, objetivoNoMapa) {
     let haSalasPendentes = false;
     let salaPosicao = [];
 
-    buscaSalas: // Label para o break
-    for (let x = 0; x < agente.mundoImaginario.length; x++) {
+    buscaSalas: for (let x = 0; x < agente.mundoImaginario.length; x++) {
         for (let y = 0; y < agente.mundoImaginario[x].length; y++) {
-            if (!agente.mundoImaginario[x][y].passou && !objetivoNoMapa && !agente.carregandoOuro && !agente.mundoImaginario[x][y].suspeita && !agente.mundoImaginario[x][y].suspeitaFedor) {
+            let sala = agente.mundoImaginario[x][y];
+            if (!sala.passou && !objetivoNoMapa && !agente.carregandoOuro && !sala.suspeita && !sala.suspeitaFedor) {
                 haSalasPendentes = true;
+                sala.objetivo = true;
                 salaPosicao = [x, y];
                 console.log("buscando a sala:", salaPosicao);
-
-                if (agente.procurarDeCima) {
-                    break buscaSalas;
-                } else {
-                    break;
-                }
+                if (agente.procurarDeCima) break buscaSalas;
+                else break;
             }
         }
     }
+    return { haSalasPendentes, salaPosicao };
+}
 
-    if (haSalasPendentes) {
-        agente.mundoImaginario[salaPosicao[0]][salaPosicao[1]].objetivo = true;
-    }
-
-    // Busca na memória do agente por falsas acusações de suspeita
+function removerFalsasSuspeitas(agente) {
     for (let x = 0; x < agente.mundoImaginario.length; x++) {
         for (let y = 0; y < agente.mundoImaginario[x].length; y++) {
-            if (agente.mundoImaginario[x][y].suspeita) {
+            let sala = agente.mundoImaginario[x][y];
+            if (sala.suspeita || sala.suspeitaFedor) {
                 let removerSuspeita = false;
-
-                const direcoes = [
-                    [x - 1, y], // Norte
-                    [x + 1, y], // Sul
-                    [x, y + 1], // Leste
-                    [x, y - 1]  // Oeste
-                ];
+                const direcoes = [[x - 1, y], [x + 1, y], [x, y + 1], [x, y - 1]];
 
                 for (let [dx, dy] of direcoes) {
                     if (
                         dx >= 0 && dx < agente.mundoImaginario.length &&
                         dy >= 0 && dy < agente.mundoImaginario[dx].length &&
                         agente.mundoImaginario[dx][dy].passou &&
-                        !agente.mundoImaginario[dx][dy].brisa // Agora verifica no mundoImaginario
+                        !(sala.suspeita ? agente.mundoImaginario[dx][dy].brisa : agente.mundoImaginario[dx][dy].fedor)
                     ) {
                         removerSuspeita = true;
                         break;
@@ -645,51 +621,70 @@ function rodarGame(mundo) {
                 }
 
                 if (removerSuspeita) {
-                    agente.mundoImaginario[x][y].suspeita = false;
-                    agente.listaBrancaSuspeita.push([x, y]);
-                    console.log(`Removendo suspeita de (${x}, ${y}) e adicionando à lista branca.`);
+                    if (sala.suspeita) {
+                        sala.suspeita = false;
+                        agente.listaBrancaSuspeita.push([x, y]);
+                        console.log(`Removendo suspeita de (${x}, ${y}) e adicionando à lista branca.`);
+                    } else {
+                        sala.suspeitaFedor = false;
+                        agente.listaBrancaSuspeitaFedor.push([x, y]);
+                        console.log(`Removendo suspeita de FEDOR (${x}, ${y}) e adicionando à lista branca.`);
+                    }
                 }
             }
         }
     }
+}
 
-    // Procura falsas acusações de Wumpus para remover do mapa
+function verificarSalasSuspeitas(agente) {
+    for (let x = 0; x < agente.mundoImaginario.length; x++) {
+        for (let y = 0; y < agente.mundoImaginario[x].length; y++) {
+            let sala = agente.mundoImaginario[x][y];
+            if (sala.suspeitaFedor) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function encontrarSalaSuspeitaDeWumpus(agente) {
     for (let x = 0; x < agente.mundoImaginario.length; x++) {
         for (let y = 0; y < agente.mundoImaginario[x].length; y++) {
             if (agente.mundoImaginario[x][y].suspeitaFedor) {
-                let removerSuspeita = false;
-
-                const direcoes = [
-                    [x - 1, y], // Norte
-                    [x + 1, y], // Sul
-                    [x, y + 1], // Leste
-                    [x, y - 1]  // Oeste
-                ];
-
-                for (let [dx, dy] of direcoes) {
-                    if (
-                        dx >= 0 && dx < agente.mundoImaginario.length &&
-                        dy >= 0 && dy < agente.mundoImaginario[dx].length &&
-                        agente.mundoImaginario[dx][dy].passou &&
-                        !agente.mundoImaginario[dx][dy].fedor // Agora verifica no mundoImaginario
-                    ) {
-                        removerSuspeita = true;
-                        break;
-                    }
-                }
-
-                if (removerSuspeita) {
-                    agente.mundoImaginario[x][y].suspeitaFedor = false;
-                    agente.listaBrancaSuspeitaFedor.push([x, y]);
-                    console.log(`Removendo suspeita de FEDOR (${x}, ${y}) e adicionando à lista branca.`);
-                }
+                return [x, y]; // Retorna a posição da primeira sala suspeita de Wumpus encontrada
             }
         }
     }
+    return null; // Retorna null se não encontrar nenhuma suspeita
+}
 
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function rodarGame(mundo) {
+    document.getElementById("agente").remove();
+    let agente = mundo.agente;
+    let posicoesOuro = mundo.posicoesOuro;
+    let ouro = mundo.ouro;
+    let posicoesWumpus = mundo.posicoesWumpus;
+
+    let padraoDeMovimentos = verificarPadraoDeMovimentos(agente);
+    let { objetivoNoMapa, posicaoObjetivoNoMapa } = verificarObjetivosNoMapa(agente);
+    let { haSalasPendentes, salaPosicao } = buscarSalasPendentes(agente, objetivoNoMapa);
+    removerFalsasSuspeitas(agente);
     agente.imaginarMundo(agente.x);
+    let haSalasSuspeitas = verificarSalasSuspeitas(agente);
 
+    // agente.imaginarMundo(agente.x);
+
+    //se o agente nao tem mais o que fazer no mapa, a unica opcao é tentar a sorte nas salas suspeitas de wumpus
+    //pois isso significa que o proximo ouro esta la
+    if (!agente.carregandoOuro && !haSalasPendentes && !objetivoNoMapa && haSalasSuspeitas) {
+        salaPosicao = encontrarSalaSuspeitaDeWumpus(agente);
+        if (salaPosicao !== null) {
+            haSalasPendentes = true;
+        }
+    }
 
     let ultimoMovimento = agente.pilhaDeMovimentos[agente.pilhaDeMovimentos.length - 1];
 
@@ -746,16 +741,16 @@ function rodarGame(mundo) {
     }
 
     // Expandindo o mundo
-    else if (!padraoDeMovimentos && verificarMovimento(agente.x + 1, agente.y, agente, mundo)) {
+    else if (!padraoDeMovimentos && verificarMovimento(agente.x + 1, agente.y, agente, mundo) && !haSalasSuspeitas) {
         console.log("Expandindo o mundo: movendo para Sul");
         agente.moverSul();
-    } else if (!padraoDeMovimentos && verificarMovimento(agente.x, agente.y + 1, agente, mundo)) {
+    } else if (!padraoDeMovimentos && verificarMovimento(agente.x, agente.y + 1, agente, mundo) && !haSalasSuspeitas) {
         console.log("Expandindo o mundo: movendo para Leste");
         agente.moverLeste();
-    } else if (!padraoDeMovimentos && verificarMovimento(agente.x - 1, agente.y, agente, mundo)) {
+    } else if (!padraoDeMovimentos && verificarMovimento(agente.x - 1, agente.y, agente, mundo) && !haSalasSuspeitas) {
         console.log("Expandindo o mundo: movendo para Norte");
         agente.moverNorte();
-    } else if (!padraoDeMovimentos && verificarMovimento(agente.x, agente.y - 1, agente, mundo)) {
+    } else if (!padraoDeMovimentos && verificarMovimento(agente.x, agente.y - 1, agente, mundo) && !haSalasSuspeitas) {
         console.log("Expandindo o mundo: movendo para Oeste");
         agente.moverOeste();
     }
@@ -833,7 +828,7 @@ function rodarGame(mundo) {
         document.getElementById("pontuacao").textContent = agente.pontuacao;
     }
 
-    // morreu para wumpus
+    // achou para wumpus
     if (mundo.mundo[agente.x][agente.y].wumpus) {
         if (mundo.mundo[agente.x][agente.y].wumpus.vivo) {
 
@@ -866,6 +861,8 @@ function rodarGame(mundo) {
                     achou = true;
 
                     agente.posicoesObjetivo[i][2] = false;
+                    console.log("-------------------------------------------------------------");
+                    console.log(agente.carregandoOuro);
                     break;
                 }
             }
@@ -1108,16 +1105,18 @@ document.getElementById("playPause").addEventListener("click", () => {
 });
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 document.getElementById("velocidadeLink").addEventListener("click", () => {
-    indiceVelocidade = (indiceVelocidade + 1) % velocidades.length;
+    if (rodando) {
+        indiceVelocidade = (indiceVelocidade + 1) % velocidades.length;
 
-    clearInterval(internal);
-    internal = null;
+        clearInterval(internal);
+        internal = null;
 
-    internal = setInterval(() => {
-        rodarGame(mundo);
-    }, velocidades[indiceVelocidade]);
+        internal = setInterval(() => {
+            rodarGame(mundo);
+        }, velocidades[indiceVelocidade]);
 
-    document.getElementById("velocidadeLink").textContent = (velocidades[indiceVelocidade] / 1000).toFixed(1);
+        document.getElementById("velocidadeLink").textContent = (velocidades[indiceVelocidade] / 1000).toFixed(1);
+    }
 });
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 document.getElementById("atualizarMundo").addEventListener("click", function (event) {
