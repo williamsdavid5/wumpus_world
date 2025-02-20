@@ -282,3 +282,11 @@ p {
 .objetivo {
     background-color: green;
 }
+
+.suspeitaFedor {
+    background-color: blueviolet;
+}
+
+.suspeita .suspeitaFedor {
+    background-color: brown;
+}
