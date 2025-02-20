@@ -679,7 +679,6 @@ function rodarGame(mundo) {
     let { objetivoNoMapa, posicaoObjetivoNoMapa } = verificarObjetivosNoMapa(agente);
     let { haSalasPendentes, salaPosicao } = buscarSalasPendentes(agente, objetivoNoMapa);
     removerFalsasSuspeitas(agente);
-    agente.imaginarMundo(agente.x);
     let haSalasSuspeitas = verificarSalasSuspeitas(agente);
 
     //se o agente nao tem mais o que fazer no mapa, a unica opcao é tentar a sorte nas salas suspeitas de wumpus
@@ -699,6 +698,8 @@ function rodarGame(mundo) {
         haSalasPendentes = false;
         salaPosicao = [];
     }
+
+    agente.imaginarMundo(agente.x);
 
     if (!padraoDeMovimentos && objetivoNoMapa && agente.y < posicaoObjetivoNoMapa[1] && verificarMovimento(agente.x, agente.y + 1, agente, mundo) && ultimoMovimento !== "O") {
         console.log("Buscando objetivo: movendo para Leste");
