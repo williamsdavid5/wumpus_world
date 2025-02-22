@@ -25,6 +25,23 @@ class Wumpus {
         this.vivo = true;
     }
 }
+
+class Memoria {
+    constructor() {
+        this.posicoesObjetivo = [];
+        this.listaBrancaSuspeita = [];
+        this.listaBrancaSuspeitaFedor = [];
+        this.mundoImaginario = [];
+    }
+
+    salvar(agente) {
+        this.posicoesObjetivo = agente.posicoesObjetivo;
+        this.listaBrancaSuspeita = agente.listaBrancaSuspeita;
+        this.listaBrancaSuspeitaFedor = agente.listaBrancaSuspeitaFedor;
+        this.mundoImaginario = agente.mundoImaginario;
+    }
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class Agente {
     constructor(flecha, mundo) {
@@ -37,7 +54,7 @@ class Agente {
         this.x = 0;
         this.y = 0;
 
-        this.sala = mundo[this.x][this.y]; // o agente recebe o mundo como parametro para poder verificar as paredes
+        this.sala = mundo[this.x][this.y];
 
         this.mortes = 0;
         this.vitorias = 0;
@@ -57,12 +74,6 @@ class Agente {
         this.mundoImaginario[0][0].passou = true;
         renderizarMapaImaginario(mapaTamanhoPixels * 0.8, this.mundoImaginario.length, this.mundoImaginario, "mapaImaginario");
 
-        // this.prioridades = {
-        //     buscarObjetivo: ["Leste", "Sul", "Oeste", "Norte"],
-        //     voltarComOuro: ["Norte", "Oeste", "Sul", "Leste"],
-        //     buscarSalasPendentes: ["Leste", "Sul", "Oeste", "Norte"],
-        //     expandirMundo: ["Leste", "Sul", "Oeste", "Norte"],
-        // };
     }
 
     imaginarMundo(movimentoPosicao) {
@@ -882,6 +893,13 @@ function rodarGame(mundo) {
 
             console.log("morto por wumpus!!!!!!!!!!");
 
+            if (!document.getElementById("usarReencarnacao").checked) {
+                agente.posicoesObjetivo = [];
+                agente.listaBrancaSuspeita = [];
+                agente.listaBrancaSuspeitaFedor = [];
+                agente.mundoImaginario = [];
+            }
+
             agente.pontuacao = 0;
             agente.flechas = mundo.wumpus;
             mundo.mortesPorWumpus += 1;
@@ -994,6 +1012,13 @@ function rodarGame(mundo) {
             agente.posicoesObjetivo[i][2] = true;
         }
 
+        if (!document.getElementById("usarReencarnacao").checked) {
+            agente.posicoesObjetivo = [];
+            agente.listaBrancaSuspeita = [];
+            agente.listaBrancaSuspeitaFedor = [];
+            agente.mundoImaginario = [];
+        }
+
         agente.pontuacao = 0;
         agente.ouro = 0;
         agente.flechas = mundo.wumpus;
@@ -1090,6 +1115,13 @@ function rodarGame(mundo) {
             agente.vitorias += 1;
             agente.pontuacao += 1000;
             agente.ouro = 0;
+
+            if (!document.getElementById("usarReencarnacao").checked) {
+                agente.posicoesObjetivo = [];
+                agente.listaBrancaSuspeita = [];
+                agente.listaBrancaSuspeitaFedor = [];
+                agente.mundoImaginario = [];
+            }
 
             for (let i = 0; i < agente.posicoesObjetivo.length; i++) {
                 agente.posicoesObjetivo[i][2] = true;
@@ -1189,6 +1221,7 @@ let mapaTamanhoPixels = localStorage.getItem("dimensaoSala");
 
 let mundo = new Mundo(d);
 mundo.agente = new Agente(mundo.wumpus, mundo.mundo);
+let memoria = new Memoria();
 
 renderizarMapa(mapaTamanhoPixels, d, mundo, "mapa");
 let auturaMapa = document.getElementById("mapa").offsetHeight;
