@@ -384,7 +384,7 @@ function renderizarMapa(mapaTamanho, d, mundo, mapaId) {
                     salaDiv.innerHTML += "<img src=\"textures/canvaWumpusVivo.png\" id=\"" + x + "," + y + "_wumpus\" class=\"wumpus\" alt=\"\">";
                 }
 
-                if (localStorage.getItem("sensacoes") == "true") {
+                if (document.getElementById("mostrarSensacoes").checked) {
                     if (mundo.mundo[x][y].fedor) {
                         if (mundo.mundo[x][y].brisa) {
                             salaDiv.innerHTML += "<img src=\"textures/fedorEBrisa.png\" id=\"fedor\" class=\"sensacao\" alt=\"\">";
@@ -470,13 +470,15 @@ function verificarCaminho(x, y, agente, mundo) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-function verificarSuspeita(x, y, agente) {
+//funcao que verifica suspeitas de buraco
+function verificarSuspeitaBuraco(x, y, agente) {
     agente.imaginarMundo(x > y ? x : y);
     salaSuspeita = agente.mundoImaginario[x][y].suspeita;
     return salaSuspeita;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//função que verifica suspeitas de wumpus, diz se ha um wumpus la se baseando nas percepcoes ao redor
 function verificarSuspeitaWumpus(x, y, agente, mundo) {
     agente.imaginarMundo(x > y ? x : y);
     let salaSuspeita = agente.mundoImaginario[x][y].suspeitaFedor;
@@ -517,6 +519,7 @@ function verificarSuspeitaWumpus(x, y, agente, mundo) {
                     let novoWUmpus = new Wumpus();
                     novoWUmpus.vivo = false;
                     agente.mundoImaginario[x][y].wumpus = novoWUmpus
+                    agente.mundoImaginario[x][y].suspeitaFedor = false;
                     agente.imaginarMundo(x > y ? x : y);
                     mundo.wumpusMortos += 1;
                     document.getElementById("flechasNumero").textContent = agente.flechas;
@@ -536,13 +539,15 @@ function verificarSuspeitaWumpus(x, y, agente, mundo) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//verifica wumpus e buraco ao mesmo tempo, assim o agente pode se desviar dos dois, quando possivel
 function verificarMovimento(x, y, agente, mundo) {
     return verificarCaminho(x, y, agente, mundo) &&
-        !verificarSuspeita(x, y, agente) &&
+        !verificarSuspeitaBuraco(x, y, agente) &&
         !verificarSuspeitaWumpus(x, y, agente, mundo);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//usa o log de movimentos que o agente guarda para verificar se ha algum padrao, indicando que ele ficou preso atras de obastaculos
 function verificarPadraoDeMovimentos(agente) {
     let padraoDeMovimentos = false;
     if (agente.pilhaDeMovimentos.length >= 4) {
@@ -559,7 +564,6 @@ function verificarPadraoDeMovimentos(agente) {
                 movimentos = agente.pilhaDeMovimentos.slice(-50).join("");
                 padraoDeMovimentos = expressaoRegex.test(movimentos);
                 if (padraoDeMovimentos) {
-                    console.log(movimentos);
                     agente.pilhaDeMovimentos = [agente.pilhaDeMovimentos.at(-1)];
                 }
             }
@@ -569,6 +573,7 @@ function verificarPadraoDeMovimentos(agente) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//ve se o seu diario possui objetivos anotados, se sim, ele ira atras
 function verificarObjetivosNoMapa(agente) {
     let objetivoNoMapa = false;
     let posicaoObjetivoNoMapa = [];
@@ -585,6 +590,7 @@ function verificarObjetivosNoMapa(agente) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//ve se ha salas pendentes a serem exploradas
 function buscarSalasPendentes(agente, objetivoNoMapa) {
     let haSalasPendentes = false;
     let salaPosicao = [];
@@ -606,6 +612,7 @@ function buscarSalasPendentes(agente, objetivoNoMapa) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//tenta remover falsas suspeitas
 function removerFalsasSuspeitas(agente) {
     for (let x = 0; x < agente.mundoImaginario.length; x++) {
         for (let y = 0; y < agente.mundoImaginario[x].length; y++) {
@@ -694,13 +701,14 @@ function rodarGame(mundo) {
 
     // Verificando o movimento do agente
     // Se o agente possui coordenadas de um objetivo
-    if (objetivoNoMapa || agente.carregandoOuro) {
-        haSalasPendentes = false;
-        salaPosicao = [];
-    }
+    // if (objetivoNoMapa || agente.carregandoOuro) {
+    //     haSalasPendentes = false;
+    //     salaPosicao = [];
+    // }
 
     agente.imaginarMundo(agente.x);
 
+    //o agente possui um objetivo claro no mapa
     if (!padraoDeMovimentos && objetivoNoMapa && agente.y < posicaoObjetivoNoMapa[1] && verificarMovimento(agente.x, agente.y + 1, agente, mundo) && ultimoMovimento !== "O") {
         console.log("Buscando objetivo: movendo para Leste");
         agente.moverLeste();
@@ -762,34 +770,59 @@ function rodarGame(mundo) {
 
     // Movimento aleatório
     else {
-        let movimentos = [];
+        if (!padraoDeMovimentos) {
+            if (ultimoMovimento === "N") {
+                console.log("----------------------------------------");
+                console.log("retornou sul");
+                agente.moverSul();
+            } else if (ultimoMovimento === "S") {
+                console.log("----------------------------------------");
+                console.log("retornou norte");
+                agente.moverNorte();
+            } else if (ultimoMovimento === "L") {
+                console.log("----------------------------------------");
+                console.log("retornou oeste");
+                agente.moverOeste();
+            } else if (ultimoMovimento === "O") {
+                console.log("----------------------------------------");
+                console.log("retornou leste");
+                agente.moverLeste();
+            }
+            console.log(ultimoMovimento);
+            console.log(agente.pilhaDeMovimentos);
 
-        agente.qtdPadrao += 1;
-        if (haSalasPendentes && agente.qtdPadrao > 4) {
-            agente.procurarDeCima = !agente.procurarDeCima;
-            agente.mundoImaginario[salaPosicao[0]][salaPosicao[1]].objetivo = false;
-            salaPosicao = [];
-            haSalasPendentes = false;
-            agente.qtdPadrao = 0;
+        } else {
+
+            let movimentos = [];
+
+            agente.qtdPadrao += 1;
+            if (haSalasPendentes && agente.qtdPadrao > 10) {
+                agente.procurarDeCima = !agente.procurarDeCima;
+                agente.mundoImaginario[salaPosicao[0]][salaPosicao[1]].objetivo = false;
+                salaPosicao = [];
+                haSalasPendentes = false;
+                agente.qtdPadrao = 0;
+            }
+
+            if (verificarCaminho(agente.x - 1, agente.y, agente, mundo)) {
+                movimentos.push(() => { console.log("Moveu aleatório: Norte"); agente.moverNorte(); });
+            }
+
+            if (verificarCaminho(agente.x + 1, agente.y, agente, mundo)) {
+                movimentos.push(() => { console.log("Moveu aleatório: Sul"); agente.moverSul(); });
+            }
+
+            if (verificarCaminho(agente.x, agente.y + 1, agente, mundo)) {
+                movimentos.push(() => { console.log("Moveu aleatório: Leste"); agente.moverLeste(); });
+            }
+
+            if (verificarCaminho(agente.x, agente.y - 1, agente, mundo)) {
+                movimentos.push(() => { console.log("Moveu aleatório: Oeste"); agente.moverOeste(); });
+            }
+
+            movimentos[Math.floor(Math.random() * movimentos.length)]();
         }
 
-        if (verificarCaminho(agente.x - 1, agente.y, agente, mundo)) {
-            movimentos.push(() => { console.log("Moveu aleatório: Norte"); agente.moverNorte(); });
-        }
-
-        if (verificarCaminho(agente.x + 1, agente.y, agente, mundo)) {
-            movimentos.push(() => { console.log("Moveu aleatório: Sul"); agente.moverSul(); });
-        }
-
-        if (verificarCaminho(agente.x, agente.y + 1, agente, mundo)) {
-            movimentos.push(() => { console.log("Moveu aleatório: Leste"); agente.moverLeste(); });
-        }
-
-        if (verificarCaminho(agente.x, agente.y - 1, agente, mundo)) {
-            movimentos.push(() => { console.log("Moveu aleatório: Oeste"); agente.moverOeste(); });
-        }
-
-        movimentos[Math.floor(Math.random() * movimentos.length)]();
     }
 
     agente.pontuacao -= 1;
@@ -846,6 +879,8 @@ function rodarGame(mundo) {
 
             mundo.agentesNumero += 1;
             document.getElementById("logPontuacao").value = "Agente " + mundo.agentesNumero + ": " + agente.pontuacao + ", morto por canva" + "\n" + document.getElementById("logPontuacao").value;
+
+            console.log("morto por wumpus!!!!!!!!!!");
 
             agente.pontuacao = 0;
             agente.flechas = mundo.wumpus;
@@ -947,6 +982,7 @@ function rodarGame(mundo) {
 
     // morreu para um buraco
     if (mundo.mundo[agente.x][agente.y].buraco) {
+        console.log("morto por buraco!!!!!!!!!!");
         agente.x = agente.y = 0;
         agente.mortes += 1;
         agente.pontuacao -= 1000;
@@ -1131,6 +1167,11 @@ document.querySelectorAll('a').forEach(link => {
         event.preventDefault();
     });
 });
+
+document.getElementById("mostrarSensacoes").addEventListener("change", () => {
+    document.getElementById("mapa").innerHTML = "";
+    renderizarMapa(mapaTamanhoPixels, d, mundo, "mapa");
+});
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 let d = localStorage.getItem("dimensaoMapa");
@@ -1138,14 +1179,10 @@ let mapaTamanhoPixels = localStorage.getItem("dimensaoSala");
 
 let mundo = new Mundo(d);
 mundo.agente = new Agente(mundo.wumpus, mundo.mundo);
+
 renderizarMapa(mapaTamanhoPixels, d, mundo, "mapa");
 let auturaMapa = document.getElementById("mapa").offsetHeight;
 document.getElementById("logPontuacao").style.height = auturaMapa - 70 + "px";
-
-let mapaImaginarioLabel = document.createElement("p");
-mapaImaginarioLabel.textContent = "Mapa Imagiário";
-mapaImaginarioLabel.id = "mapaImaginarioLabel";
-document.body.appendChild(mapaImaginarioLabel);
 
 let velocidades = [2000, 1500, 1000, 500, 100];
 let indiceVelocidade = 2;

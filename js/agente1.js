@@ -241,7 +241,7 @@ function renderizarMapa(mapaTamanho, d, mundo) {
                     salaDiv.innerHTML += "<img src=\"textures/canvaWumpusVivo.png\" id=\"" + x + "," + y + "_wumpus\" class=\"wumpus\" alt=\"\">";
                 }
 
-                if (localStorage.getItem("sensacoes") == "true") {
+                if (document.getElementById("mostrarSensacoes").checked) {
                     if (mundo.mundo[x][y].fedor) {
                         if (mundo.mundo[x][y].brisa) {
                             salaDiv.innerHTML += "<img src=\"textures/fedorEBrisa.png\" id=\"fedor\" class=\"sensacao\" alt=\"\">";
@@ -463,6 +463,14 @@ document.querySelectorAll('a').forEach(link => {
     });
 });
 
+document.getElementById("mostrarSensacoes").addEventListener("change", () => {
+    document.getElementById("mapa").innerHTML = "";
+    renderizarMapa(mapaTamanhoPixels, d, mundo, "mapa");
+});
+
+document.getElementById("fieldMapaImaginario").remove();
+document.getElementById("usarReencarnacaoLabel").remove();
+document.getElementById("usarReencarnacao").remove();
 
 let d = localStorage.getItem("dimensaoMapa");
 let mapaTamanhoPixels = localStorage.getItem("dimensaoSala");

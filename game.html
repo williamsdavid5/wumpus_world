@@ -41,13 +41,23 @@
             <a href="#" id="velocidadeLink"></a>
         </div>
         <a href="" id="atualizarMundo"></a>
+        <div id="checkBoxes">
+            <input type="checkbox" id="mostrarSensacoes"><label for=""> Mostrar sensações</label><br>
+            <input type="checkbox" id="usarReencarnacao"><label for="" id="usarReencarnacaoLabel"> Usar reencarnação
+                (não disponivel
+                ainda!)</label>
+        </div>
     </div>
     <div id="divLogPontuacao">
         <p>Pontuação dos agentes</p>
         <textarea name="" id="logPontuacao" readonly></textarea>
     </div>
     <div id="mapa"></div>
-    <div id="mapaImaginario"></div>
+    <fieldset id="fieldMapaImaginario">
+        <legend>Mapa imaginário</legend>
+        <div id="mapaImaginario"></div>
+    </fieldset>
+
     <script src="js/game.js"></script>
 </body>
 
