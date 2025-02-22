@@ -165,7 +165,7 @@ class Mundo {
             do {
                 x = Math.floor(Math.random() * d);
                 y = Math.floor(Math.random() * d);
-            } while (x === 0 && y === 0);
+            } while ((x === 0 && y === 0) || (x === 1 && y === 0) || (x === 0 && y === 1) || (x === 1 && y === 1));
 
             let sala = this.mundo[x][y];
 
@@ -464,6 +464,15 @@ document.querySelectorAll('a').forEach(link => {
 });
 
 document.getElementById("mostrarSensacoes").addEventListener("change", () => {
+    document.getElementById("mapa").innerHTML = "";
+    renderizarMapa(mapaTamanhoPixels, d, mundo, "mapa");
+});
+
+document.getElementById("inputTamanhoSala").addEventListener("change", () => {
+    mapaTamanhoPixels = document.getElementById("inputTamanhoSala").value;
+    localStorage.setItem("dimensaoSala", mapaTamanhoPixels);
+    auturaMapa = document.getElementById("mapa").offsetHeight;
+    document.getElementById("logPontuacao").style.height = auturaMapa * 0.8 + "px";
     document.getElementById("mapa").innerHTML = "";
     renderizarMapa(mapaTamanhoPixels, d, mundo, "mapa");
 });

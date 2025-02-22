@@ -324,7 +324,7 @@ function renderizarMapaImaginario(mapaTamanho, d, mundo, mapaId) {
 
                 }
 
-                if (localStorage.getItem("sensacoes") == "true") {
+                if (document.getElementById("mostrarSensacoes").checked) {
                     if (mundo[x][y].fedor) {
                         if (mundo[x][y].brisa) {
                             salaDiv.innerHTML += "<img src=\"textures/fedorEBrisa.png\" id=\"fedor\" class=\"sensacao\" alt=\"\">";
@@ -1166,6 +1166,16 @@ document.querySelectorAll('a').forEach(link => {
     link.addEventListener('click', event => {
         event.preventDefault();
     });
+});
+
+document.getElementById("inputTamanhoSala").addEventListener("change", () => {
+    mapaTamanhoPixels = document.getElementById("inputTamanhoSala").value;
+    localStorage.setItem("dimensaoSala", mapaTamanhoPixels);
+    auturaMapa = document.getElementById("mapa").offsetHeight;
+    document.getElementById("logPontuacao").style.height = auturaMapa * 0.8 + "px";
+    document.getElementById("mapa").innerHTML = "";
+    renderizarMapa(mapaTamanhoPixels, d, mundo, "mapa");
+    mundo.agente.imaginarMundo(0);
 });
 
 document.getElementById("mostrarSensacoes").addEventListener("change", () => {
