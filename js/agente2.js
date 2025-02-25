@@ -11,7 +11,7 @@ class Sala {
         this.passou = false;
         this.suspeita = false;
         this.suspeitaFedor = false;
-        this.objetivo = false;
+        this.objetivo = false; // sala que o agente pretende epxlorar
 
         this.norte = null;
         this.sull = null;
@@ -204,6 +204,7 @@ class Agente {
         }
     }
 }
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class Mundo {
     constructor(d) {

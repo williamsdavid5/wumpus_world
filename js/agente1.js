@@ -367,16 +367,28 @@ function rodarGameAleatorio(mundo) {
 
     //sentiu fedor, disparou
     if (mundo.mundo[agente.x][agente.y].fedor && agente.flechas > 0) {
-        let disparos = [
-            () => agente.dispararNorte(),
-            () => agente.dispararSul(),
-            () => agente.dispararLeste(),
-            () => agente.dispararOeste()
-        ];
+        let disparos = [];
+
+        if (mundo.mundo[agente.x - 1] && mundo.mundo[agente.x - 1][agente.y] !== undefined) {
+            disparos.push(() => agente.dispararNorte());
+        }
+        if (mundo.mundo[agente.x + 1] && mundo.mundo[agente.x + 1][agente.y] !== undefined) {
+            disparos.push(() => agente.dispararSul());
+        }
+        if (mundo.mundo[agente.x] && mundo.mundo[agente.x][agente.y + 1] !== undefined) {
+            disparos.push(() => agente.dispararLeste());
+        }
+        if (mundo.mundo[agente.x] && mundo.mundo[agente.x][agente.y - 1] !== undefined) {
+            disparos.push(() => agente.dispararOeste());
+        }
+
+
         agente.pontuacao -= 10;
         document.getElementById("pontuacao").textContent = agente.pontuacao;
         mundo.flechasDisparadas += 1;
         let morreu = disparos[Math.floor(Math.random() * disparos.length)]();
+
+
 
         document.getElementById("flechasNumero").textContent = agente.flechas;
         document.getElementById("Flechas disparadas").textContent = "Tiros disparados: " + mundo.flechasDisparadas;
