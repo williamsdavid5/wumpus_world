@@ -7,11 +7,6 @@ class Sala {
         this.brisa = false;
         this.fedor = false;
         this.ouro = false;
-
-        this.norte = null;
-        this.sull = null;
-        this.leste = null;
-        this.oeste = null;
     }
 }
 
@@ -382,13 +377,10 @@ function rodarGameAleatorio(mundo) {
             disparos.push(() => agente.dispararOeste());
         }
 
-
         agente.pontuacao -= 10;
         document.getElementById("pontuacao").textContent = agente.pontuacao;
         mundo.flechasDisparadas += 1;
         let morreu = disparos[Math.floor(Math.random() * disparos.length)]();
-
-
 
         document.getElementById("flechasNumero").textContent = agente.flechas;
         document.getElementById("Flechas disparadas").textContent = "Tiros disparados: " + mundo.flechasDisparadas;
