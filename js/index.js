@@ -19,9 +19,14 @@ document.getElementById("botaoIniciar").addEventListener("click", function () {
     localStorage.setItem("dimensaoSala", tamanhoSala.value);
     localStorage.setItem("dimensaoMapa", dimensaoMapa.value);
     localStorage.setItem("agente", agenteSelecionado.value);
-
+    localStorage.setItem("mundoSelecionado", selecionarMundo.value);
     window.location.href = "game.html";
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    selecionarMundo.selectedIndex = 0; // Seleciona a segunda opção // Define a opção ao carregar a página
+});
+
 
 selecionarMundo.addEventListener("change", function () {
     if (selecionarMundo.value === "aleatorio") {

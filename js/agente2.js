@@ -281,8 +281,6 @@ class Mundo {
         });
     }
 
-    //para converter o mundo em um json e exportar
-    //apenas as posições dos elementos são exportados
     exportarMundo() {
         let mundoData = {
             tamanho: this.mundo.length,
@@ -292,7 +290,11 @@ class Mundo {
                 brisa: sala.brisa,
                 fedor: sala.fedor,
                 ouro: sala.ouro
-            })))
+            }))),
+            numOuros: this.ouro,
+            numWumpus: this.wumpus,
+            posicoesOuroOriginais: this.posicoesOuro,
+            posicoesWumpusOriginais: this.posicoesWumpus
         };
 
         return JSON.stringify(mundoData);
@@ -302,17 +304,15 @@ class Mundo {
         const tamanho = mundoData.tamanho;
         this.mundo = [];
 
-        // as salas do mundo atual são atualizadas com as salas do novo mundo importado
         for (let x = 0; x < tamanho; x++) {
             let temp = [];
             for (let y = 0; y < tamanho; y++) {
                 let salaData = mundoData.mundo[x][y];
                 let sala = new Sala(x, y);
 
-                // Restaura as entidades na sala
                 if (salaData.wumpus) {
                     sala.wumpus = new Wumpus();
-                    sala.wumpus.vivo = salaData.wumpus.vivo;
+                    sala.wumpus.vivo = true;
                 }
                 sala.buraco = salaData.buraco;
                 sala.brisa = salaData.brisa;
@@ -323,6 +323,12 @@ class Mundo {
             }
             this.mundo.push(temp);
         }
+
+        this.ouro = mundoData.numOuros || 0;
+        this.wumpus = mundoData.numWumpus || 0;
+
+        this.posicoesOuro = mundoData.posicoesOuroOriginais || [];
+        this.posicoesWumpus = mundoData.posicoesWumpusOriginais || [];
     }
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -454,6 +460,9 @@ function renderizarMapa(mapaTamanho, d, mundo, mapaId) {
             mapa.appendChild(salaDiv);
         }
     }
+
+    let auturaMapa = document.getElementById("mapa").offsetHeight;
+    document.getElementById("logPontuacao").style.height = auturaMapa * 0.8 + "px";
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function restaurarMundo(mundo, posicoesOuro, posicoesWumpus, agente) {
@@ -494,14 +503,6 @@ function verificarCaminho(x, y, agente, mundo) {
             agente.pontuacao += 1000;
             agente.flechas -= 1;
             mundo.mundo[x][y].wumpus.vivo = false;
-
-            //se atirou no wumpus, define esse como falso
-            // for (let i = 0; i < agente.posicoesObjetivo.length; i++) {
-            //     if (agente.posicoesObjetivo[i][0] == x && agente.posicoesObjetivo[i][1] == y) {
-            //         agente.posicoesObjetivo[i][2] = false;
-            //         break;
-            //     }
-            // }
 
             agente.mundoImaginario[x][y].wumpus.vivo = false;
             mundo.wumpusMortos += 1;
@@ -748,13 +749,6 @@ function rodarGame(mundo) {
 
     let ultimoMovimento = agente.pilhaDeMovimentos[agente.pilhaDeMovimentos.length - 1];
 
-    // Verificando o movimento do agente
-    // Se o agente possui coordenadas de um objetivo
-    // if (objetivoNoMapa || agente.carregandoOuro) {
-    //     haSalasPendentes = false;
-    //     salaPosicao = [];
-    // }
-
     agente.imaginarMundo(agente.x);
 
     //o agente possui um objetivo claro no mapa
@@ -819,29 +813,6 @@ function rodarGame(mundo) {
 
     // Movimento aleatório
     else {
-        // if (!padraoDeMovimentos) {
-        //     if (ultimoMovimento === "N") {
-        //         console.log("----------------------------------------");
-        //         console.log("retornou sul");
-        //         agente.moverSul();
-        //     } else if (ultimoMovimento === "S") {
-        //         console.log("----------------------------------------");
-        //         console.log("retornou norte");
-        //         agente.moverNorte();
-        //     } else if (ultimoMovimento === "L") {
-        //         console.log("----------------------------------------");
-        //         console.log("retornou oeste");
-        //         agente.moverOeste();
-        //     } else if (ultimoMovimento === "O") {
-        //         console.log("----------------------------------------");
-        //         console.log("retornou leste");
-        //         agente.moverLeste();
-        //     }
-        //     console.log(ultimoMovimento);
-        //     console.log(agente.pilhaDeMovimentos);
-
-        // } else {
-
         let movimentos = [];
 
         agente.qtdPadrao += 1;
@@ -1213,15 +1184,12 @@ function carregarMundo() {
             const mundoJSON = e.target.result;
             const mundoData = JSON.parse(mundoJSON);
 
-            // Cria um novo mundo e importa os dados
             const novoMundo = new Mundo(mundoData.tamanho);
             novoMundo.importarMundo(mundoData);
 
-            // Recria o agente no novo mundo
             novoMundo.agente = new Agente(novoMundo.wumpus, novoMundo.mundo);
             mundo = novoMundo;
 
-            //renderizar o novo mundo
             document.getElementById("mapa").innerHTML = "";
             renderizarMapa(mapaTamanhoPixels, mundoData.tamanho, mundo, "mapa");
 
@@ -1232,6 +1200,35 @@ function carregarMundo() {
     });
 
     input.click();
+}
+
+function carregarMundoPredefinido(nomeArquivo) {
+    const caminhoCompleto = `worlds/${nomeArquivo}.json`;
+
+    fetch(caminhoCompleto)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Erro ao carregar o mundo: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(mundoData => {
+            const novoMundo = new Mundo(mundoData.tamanho);
+            novoMundo.importarMundo(mundoData);
+            novoMundo.agente = new Agente(novoMundo.wumpus, novoMundo.mundo);
+
+            mundo = novoMundo;
+            d = mundoData.tamanho;
+
+            document.getElementById("mapa").innerHTML = "";
+            renderizarMapa(mapaTamanhoPixels, mundoData.tamanho, mundo, "mapa");
+
+            console.log(`Mundo "${nomeArquivo}" carregado com sucesso!`);
+            console.log(mundo);
+        })
+        .catch(error => {
+            console.error("Erro ao carregar o mundo:", error);
+        });
 }
 
 document.getElementById("botaoSalvarMundo").addEventListener("click", function () {
@@ -1292,8 +1289,6 @@ document.querySelectorAll('a').forEach(link => {
 document.getElementById("inputTamanhoSala").addEventListener("change", () => {
     mapaTamanhoPixels = document.getElementById("inputTamanhoSala").value;
     localStorage.setItem("dimensaoSala", mapaTamanhoPixels);
-    auturaMapa = document.getElementById("mapa").offsetHeight;
-    document.getElementById("logPontuacao").style.height = auturaMapa * 0.8 + "px";
     document.getElementById("mapa").innerHTML = "";
     renderizarMapa(mapaTamanhoPixels, d, mundo, "mapa");
     mundo.agente.imaginarMundo(0);
@@ -1305,16 +1300,35 @@ document.getElementById("mostrarSensacoes").addEventListener("change", () => {
 });
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
 let d = localStorage.getItem("dimensaoMapa");
 let mapaTamanhoPixels = localStorage.getItem("dimensaoSala");
+let mundo;
 
-let mundo = new Mundo(d);
-mundo.agente = new Agente(mundo.wumpus, mundo.mundo);
-let memoria = new Memoria();
-
-renderizarMapa(mapaTamanhoPixels, d, mundo, "mapa");
-let auturaMapa = document.getElementById("mapa").offsetHeight;
-document.getElementById("logPontuacao").style.height = auturaMapa - 70 + "px";
+let mundoSelecionado = localStorage.getItem("mundoSelecionado");
+switch (mundoSelecionado) {
+    case "4":
+        carregarMundoPredefinido("4");
+        break;
+    case "5":
+        carregarMundoPredefinido("5");
+        break;
+    case "10":
+        carregarMundoPredefinido("10");
+        break;
+    case "15":
+        carregarMundoPredefinido("15");
+        break;
+    case "20":
+        carregarMundoPredefinido("20");
+        break;
+    default:
+        mundo = new Mundo(d);
+        mundo.agente = new Agente(mundo.wumpus, mundo.mundo);
+        renderizarMapa(mapaTamanhoPixels, d, mundo, "mapa");
+        console.log("Mundo inicial mantido.");
+        break;
+}
 
 let velocidades = [2000, 1500, 1000, 500, 100];
 let indiceVelocidade = 2;

@@ -199,8 +199,6 @@ class Mundo {
         });
     }
 
-    //para converter o mundo em um json e exportar
-    //apenas as posições dos elementos são exportados
     exportarMundo() {
         let mundoData = {
             tamanho: this.mundo.length,
@@ -210,7 +208,11 @@ class Mundo {
                 brisa: sala.brisa,
                 fedor: sala.fedor,
                 ouro: sala.ouro
-            })))
+            }))),
+            numOuros: this.ouro,
+            numWumpus: this.wumpus,
+            posicoesOuroOriginais: this.posicoesOuro,
+            posicoesWumpusOriginais: this.posicoesWumpus
         };
 
         return JSON.stringify(mundoData);
@@ -220,7 +222,7 @@ class Mundo {
         const tamanho = mundoData.tamanho;
         this.mundo = [];
 
-        // as salas do mundo atual são atualizadas com as salas do novo mundo importado
+        // Restaura as salas do mundo
         for (let x = 0; x < tamanho; x++) {
             let temp = [];
             for (let y = 0; y < tamanho; y++) {
@@ -230,7 +232,7 @@ class Mundo {
                 // Restaura as entidades na sala
                 if (salaData.wumpus) {
                     sala.wumpus = new Wumpus();
-                    sala.wumpus.vivo = salaData.wumpus.vivo;
+                    sala.wumpus.vivo = true; // Sempre define o Wumpus como vivo
                 }
                 sala.buraco = salaData.buraco;
                 sala.brisa = salaData.brisa;
@@ -241,6 +243,12 @@ class Mundo {
             }
             this.mundo.push(temp);
         }
+
+        this.ouro = mundoData.numOuros || 0;
+        this.wumpus = mundoData.numWumpus || 0;
+
+        this.posicoesOuro = mundoData.posicoesOuroOriginais || [];
+        this.posicoesWumpus = mundoData.posicoesWumpusOriginais || [];
     }
 
 
@@ -296,8 +304,6 @@ function renderizarMapa(mapaTamanho, d, mundo) {
                     }
                 }
 
-
-
                 if (mundo.mundo[x][y].ouro) {
                     salaDiv.innerHTML += "<img src=\"textures/azedinha.png\" id=\"" + x + "," + y + "_ouroItem\" alt=\"\">";
                 }
@@ -307,7 +313,8 @@ function renderizarMapa(mapaTamanho, d, mundo) {
         }
     }
 
-    console.log(mundo);
+    let auturaMapa = document.getElementById("mapa").offsetHeight;
+    document.getElementById("logPontuacao").style.height = auturaMapa * 0.8 + "px";
 }
 
 function restaurarMundo(mundo, posicoesOuro, posicoesWumpus) {
@@ -522,6 +529,33 @@ function carregarMundo() {
     input.click();
 }
 
+// caso o usuario queira escolher um dos mundos predefinidos
+function carregarMundoPredefinido(nomeArquivo) {
+    const caminhoCompleto = `worlds/${nomeArquivo}.json`;
+
+    fetch(caminhoCompleto)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Erro ao carregar o mundo: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(mundoData => {
+            const novoMundo = new Mundo(mundoData.tamanho);
+            novoMundo.importarMundo(mundoData);
+            novoMundo.agente = new Agente(novoMundo.wumpus, novoMundo.mundo);
+            mundo = novoMundo;
+            d = mundoData.tamanho;
+            document.getElementById("mapa").innerHTML = "";
+            renderizarMapa(mapaTamanhoPixels, mundoData.tamanho, mundo);
+
+            console.log(`Mundo "${nomeArquivo}" carregado com sucesso!`);
+        })
+        .catch(error => {
+            console.error("Erro ao carregar o mundo:", error);
+        });
+}
+
 document.getElementById("botaoSalvarMundo").addEventListener("click", function () {
     salvarMundo(mundo);
 });
@@ -577,12 +611,12 @@ document.getElementById("mostrarSensacoes").addEventListener("change", () => {
 });
 
 document.getElementById("inputTamanhoSala").addEventListener("change", () => {
-    mapaTamanhoPixels = document.getElementById("inputTamanhoSala").value;
+    mapaTamanhoPixels = parseInt(document.getElementById("inputTamanhoSala").value);
     localStorage.setItem("dimensaoSala", mapaTamanhoPixels);
-    auturaMapa = document.getElementById("mapa").offsetHeight;
-    document.getElementById("logPontuacao").style.height = auturaMapa * 0.8 + "px";
+
     document.getElementById("mapa").innerHTML = "";
-    renderizarMapa(mapaTamanhoPixels, d, mundo, "mapa");
+    renderizarMapa(mapaTamanhoPixels, d, mundo);
+    console.log("Tamanho das salas atualizado para:", mapaTamanhoPixels);
 });
 
 document.getElementById("fieldMapaImaginario").remove();
@@ -591,12 +625,33 @@ document.getElementById("usarReencarnacao").remove();
 
 let d = localStorage.getItem("dimensaoMapa");
 let mapaTamanhoPixels = localStorage.getItem("dimensaoSala");
+let mundo;
 
-let mundo = new Mundo(d);
-mundo.agente = new Agente(mundo.wumpus, mundo.mundo);
-renderizarMapa(mapaTamanhoPixels, d, mundo);
-let auturaMapa = document.getElementById("mapa").offsetHeight;
-document.getElementById("logPontuacao").style.height = auturaMapa - 70 + "px";
+//para verificar se o agente escolheu um dos mundos predefinidos
+let mundoSelecionado = localStorage.getItem("mundoSelecionado");
+switch (mundoSelecionado) {
+    case "4":
+        carregarMundoPredefinido("4");
+        break;
+    case "5":
+        carregarMundoPredefinido("5");
+        break;
+    case "10":
+        carregarMundoPredefinido("10");
+        break;
+    case "15":
+        carregarMundoPredefinido("15");
+        break;
+    case "20":
+        carregarMundoPredefinido("20");
+        break;
+    default:
+        mundo = new Mundo(d);
+        mundo.agente = new Agente(mundo.wumpus, mundo.mundo);
+        renderizarMapa(mapaTamanhoPixels, d, mundo);
+        console.log("Mundo inicial mantido.");
+        break;
+}
 
 let velocidades = [2000, 1500, 1000, 500, 100];
 let indiceVelocidade = 2;
