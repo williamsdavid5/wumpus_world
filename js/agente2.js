@@ -1203,6 +1203,9 @@ function carregarMundo() {
 }
 
 function carregarMundoPredefinido(nomeArquivo) {
+    document.getElementById("botaoSalvarMundo").remove();
+    document.getElementById("botaoImportarMundo").remove();
+
     const caminhoCompleto = `worlds/${nomeArquivo}.json`;
 
     fetch(caminhoCompleto)

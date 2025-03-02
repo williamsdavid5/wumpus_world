@@ -310,6 +310,7 @@ legend {
     margin-left: 890px;
     margin-top: 20px;
     position: absolute;
+    width: 315px;
 }
 
 #checkBoxes label {

@@ -531,6 +531,9 @@ function carregarMundo() {
 
 // caso o usuario queira escolher um dos mundos predefinidos
 function carregarMundoPredefinido(nomeArquivo) {
+    document.getElementById("botaoSalvarMundo").remove();
+    document.getElementById("botaoImportarMundo").remove();
+
     const caminhoCompleto = `worlds/${nomeArquivo}.json`;
 
     fetch(caminhoCompleto)
@@ -650,7 +653,10 @@ switch (mundoSelecionado) {
         mundo.agente = new Agente(mundo.wumpus, mundo.mundo);
         renderizarMapa(mapaTamanhoPixels, d, mundo);
         console.log("Mundo inicial mantido.");
+        document.getElementById("botaoSalvarMundo").style.display = "block";
+        document.getElementById("botaoImportarMundo").style.display = "block";
         break;
+
 }
 
 let velocidades = [2000, 1500, 1000, 500, 100];
