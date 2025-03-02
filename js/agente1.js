@@ -198,6 +198,52 @@ class Mundo {
             }
         });
     }
+
+    //para converter o mundo em um json e exportar
+    //apenas as posições dos elementos são exportados
+    exportarMundo() {
+        let mundoData = {
+            tamanho: this.mundo.length,
+            mundo: this.mundo.map(linha => linha.map(sala => ({
+                wumpus: sala.wumpus ? { vivo: sala.wumpus.vivo } : null,
+                buraco: sala.buraco,
+                brisa: sala.brisa,
+                fedor: sala.fedor,
+                ouro: sala.ouro
+            })))
+        };
+
+        return JSON.stringify(mundoData);
+    }
+
+    importarMundo(mundoData) {
+        const tamanho = mundoData.tamanho;
+        this.mundo = [];
+
+        // as salas do mundo atual são atualizadas com as salas do novo mundo importado
+        for (let x = 0; x < tamanho; x++) {
+            let temp = [];
+            for (let y = 0; y < tamanho; y++) {
+                let salaData = mundoData.mundo[x][y];
+                let sala = new Sala(x, y);
+
+                // Restaura as entidades na sala
+                if (salaData.wumpus) {
+                    sala.wumpus = new Wumpus();
+                    sala.wumpus.vivo = salaData.wumpus.vivo;
+                }
+                sala.buraco = salaData.buraco;
+                sala.brisa = salaData.brisa;
+                sala.fedor = salaData.fedor;
+                sala.ouro = salaData.ouro;
+
+                temp.push(sala);
+            }
+            this.mundo.push(temp);
+        }
+    }
+
+
 }
 
 function renderizarMapa(mapaTamanho, d, mundo) {
@@ -260,6 +306,8 @@ function renderizarMapa(mapaTamanho, d, mundo) {
             mapa.appendChild(salaDiv);
         }
     }
+
+    console.log(mundo);
 }
 
 function restaurarMundo(mundo, posicoesOuro, posicoesWumpus) {
@@ -425,6 +473,62 @@ function rodarGameAleatorio(mundo) {
 function agenteClique() {
     rodarGameAleatorio(mundo)
 }
+
+function salvarMundo(mundo) {
+    // Exporta o mundo para JSON
+    const mundoJSON = mundo.exportarMundo();
+
+    // Cria um link para download para o mundo
+    const blob = new Blob([mundoJSON], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'mundo.json';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function carregarMundo() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+
+    input.addEventListener('change', function (event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            const mundoJSON = e.target.result;
+            const mundoData = JSON.parse(mundoJSON);
+
+            // Cria um novo mundo e importa os dados
+            const novoMundo = new Mundo(mundoData.tamanho);
+            novoMundo.importarMundo(mundoData);
+
+            // Recria o agente no novo mundo
+            novoMundo.agente = new Agente(novoMundo.wumpus, novoMundo.mundo);
+            mundo = novoMundo;
+
+            //renderizar o novo mundo
+            document.getElementById("mapa").innerHTML = "";
+            renderizarMapa(mapaTamanhoPixels, mundoData.tamanho, mundo);
+
+            console.log("Mundo carregado e agente reinicializado com sucesso!");
+        };
+
+        reader.readAsText(file);
+    });
+
+    input.click();
+}
+
+document.getElementById("botaoSalvarMundo").addEventListener("click", function () {
+    salvarMundo(mundo);
+});
+
+document.getElementById("botaoImportarMundo").addEventListener("click", function () {
+    carregarMundo();
+});
 
 document.getElementById("playPause").addEventListener("click", () => {
     if (rodando) {

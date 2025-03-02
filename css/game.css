@@ -308,7 +308,7 @@ legend {
 
 #checkBoxes {
     margin-left: 890px;
-    margin-top: 40px;
+    margin-top: 20px;
     position: absolute;
 }
 
@@ -323,4 +323,25 @@ legend {
 #checkBoxes input[type="checkbox"] {
     height: 20px;
     width: 20px;
+}
+
+#checkBoxes button {
+    background-color: white;
+    color: black;
+    border: none;
+    font-family: "edosz";
+    margin: 2px;
+    width: 120px;
+    height: 25px;
+}
+
+#checkBoxes button:hover {
+    color: white;
+    background-color: black;
+    border: 2px solid white;
+    transition: background-color 0.1s ease;
+}
+
+#checkBoxes button:active {
+    transform: scale(1.05);
 }
