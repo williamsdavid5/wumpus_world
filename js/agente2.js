@@ -1189,6 +1189,7 @@ function carregarMundo() {
 
             novoMundo.agente = new Agente(novoMundo.wumpus, novoMundo.mundo);
             mundo = novoMundo;
+            d = mundoData.tamanho;
 
             document.getElementById("mapa").innerHTML = "";
             renderizarMapa(mapaTamanhoPixels, mundoData.tamanho, mundo, "mapa");

@@ -515,6 +515,7 @@ function carregarMundo() {
             // Recria o agente no novo mundo
             novoMundo.agente = new Agente(novoMundo.wumpus, novoMundo.mundo);
             mundo = novoMundo;
+            d = mundoData.tamanho;
 
             //renderizar o novo mundo
             document.getElementById("mapa").innerHTML = "";
