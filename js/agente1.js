@@ -634,28 +634,16 @@ let mundo;
 //para verificar se o agente escolheu um dos mundos predefinidos
 let mundoSelecionado = localStorage.getItem("mundoSelecionado");
 switch (mundoSelecionado) {
-    case "4":
-        carregarMundoPredefinido("4");
-        break;
-    case "5":
-        carregarMundoPredefinido("5");
-        break;
-    case "10":
-        carregarMundoPredefinido("10");
-        break;
-    case "15":
-        carregarMundoPredefinido("15");
-        break;
-    case "20":
-        carregarMundoPredefinido("20");
-        break;
-    default:
+    case "aleatorio":
         mundo = new Mundo(d);
         mundo.agente = new Agente(mundo.wumpus, mundo.mundo);
         renderizarMapa(mapaTamanhoPixels, d, mundo);
         console.log("Mundo inicial mantido.");
         document.getElementById("botaoSalvarMundo").style.display = "block";
         document.getElementById("botaoImportarMundo").style.display = "block";
+        break;
+    default:
+        carregarMundoPredefinido(mundoSelecionado);
         break;
 
 }

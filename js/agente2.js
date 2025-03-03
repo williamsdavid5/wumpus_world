@@ -1310,27 +1310,17 @@ let mapaTamanhoPixels = localStorage.getItem("dimensaoSala");
 let mundo;
 
 let mundoSelecionado = localStorage.getItem("mundoSelecionado");
+
 switch (mundoSelecionado) {
-    case "4":
-        carregarMundoPredefinido("4");
-        break;
-    case "5":
-        carregarMundoPredefinido("5");
-        break;
-    case "10":
-        carregarMundoPredefinido("10");
-        break;
-    case "15":
-        carregarMundoPredefinido("15");
-        break;
-    case "20":
-        carregarMundoPredefinido("20");
-        break;
-    default:
+    case "aleatorio":
         mundo = new Mundo(d);
         mundo.agente = new Agente(mundo.wumpus, mundo.mundo);
         renderizarMapa(mapaTamanhoPixels, d, mundo, "mapa");
         console.log("Mundo inicial mantido.");
+        break;
+
+    default:
+        carregarMundoPredefinido(mundoSelecionado);
         break;
 }
 
