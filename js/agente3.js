@@ -19,7 +19,8 @@ class Wumpus {
 //representa cada individuo da população
 class Individuo {
     constructor(percurso, pontuacao) {
-        this.percurso = percurso;
+        this.percurso = percurso; //vetor percurso, guarda uma condfiguração aleatoria de movimentos
+        this.i = 0; //indice do percurso
         this.pontuacao = pontuacao;
     }
 }
@@ -36,6 +37,7 @@ class Agente {
         this.sala = mundo[this.x][this.y];
 
         this.individuos = []; //armazena objetos do tipo individuo que representa a população
+        this.individuoAtual = 0;
 
         this.mortes = 0;
         this.vitorias = 0;
@@ -43,42 +45,54 @@ class Agente {
     }
 
     moverNorte() {
-        try {
-            this.sala = this.mundo[this.x - 1][this.y];
-            this.x -= 1;
-
-        } catch (e) {
-            console.log("erro ao mover para o norte");
+        const novaPosicaoX = this.x - 1;
+        if (novaPosicaoX >= 0 && this.mundo[novaPosicaoX] && this.mundo[novaPosicaoX][this.y]) {
+            this.sala = this.mundo[novaPosicaoX][this.y];
+            this.x = novaPosicaoX;
+            this.pontuacao -= 1000;
+            console.log("moveu norte", this.x, this.y);
+        } else {
+            this.pontuacao -= 1000; // Penaliza a pontuação mesmo se o movimento for inválido
+            console.log("erro ao mover para o norte", this.x, this.y);
         }
     }
 
     moverSul() {
-        try {
-            this.sala = this.mundo[this.x + 1][this.y];
-            this.x += 1;
-
-        } catch (e) {
-            console.log("erro ao mover para o sul");
+        const novaPosicaoX = this.x + 1;
+        if (novaPosicaoX < this.mundo.length && this.mundo[novaPosicaoX] && this.mundo[novaPosicaoX][this.y]) {
+            this.sala = this.mundo[novaPosicaoX][this.y];
+            this.x = novaPosicaoX;
+            this.pontuacao -= 1000;
+            console.log("moveu sul", this.x, this.y);
+        } else {
+            this.pontuacao -= 1000; // Penaliza a pontuação mesmo se o movimento for inválido
+            console.log("erro ao mover para o sul", this.x, this.y);
         }
     }
 
     moverLeste() {
-        try {
-            this.sala = this.mundo[this.x][this.y + 1];
-            this.y += 1;
-
-        } catch (e) {
-            console.log("erro ao mover para o leste");
+        const novaPosicaoY = this.y + 1;
+        if (novaPosicaoY < this.mundo[this.x].length && this.mundo[this.x][novaPosicaoY]) {
+            this.sala = this.mundo[this.x][novaPosicaoY];
+            this.y = novaPosicaoY;
+            this.pontuacao -= 1000;
+            console.log("moveu leste", this.x, this.y);
+        } else {
+            this.pontuacao -= 1000; // Penaliza a pontuação mesmo se o movimento for inválido
+            console.log("erro ao mover para o leste", this.x, this.y);
         }
     }
 
     moverOeste() {
-        try {
-            this.sala = this.mundo[this.x][this.y - 1];
-            this.y -= 1;
-
-        } catch (e) {
-            console.log("erro ao mover para o oeste");
+        const novaPosicaoY = this.y - 1;
+        if (novaPosicaoY >= 0 && this.mundo[this.x][novaPosicaoY]) {
+            this.sala = this.mundo[this.x][novaPosicaoY];
+            this.y = novaPosicaoY;
+            this.pontuacao -= 1000;
+            console.log("moveu oeste", this.x, this.y);
+        } else {
+            this.pontuacao -= 1000; // Penaliza a pontuação mesmo se o movimento for inválido
+            console.log("erro ao mover para o oeste", this.x, this.y);
         }
     }
 
@@ -346,6 +360,31 @@ function restaurarMundo(mundo, posicoesOuro, posicoesWumpus) {
 
 }
 
+function definirPercurso(mundo) {
+    let agente = mundo.agente;
+    let movimentos = [
+        agente.moverNorte.bind(agente),
+        agente.moverSul.bind(agente),
+        agente.moverLeste.bind(agente),
+        agente.moverOeste.bind(agente)
+    ];
+    let individuos = [];
+    for (let j = 0; j <= 10; j++) {
+        let percurso = [];
+        let tamanhoPercurso = Math.floor(Math.random() * d + 1) + d;
+
+        for (let i = 0; i < tamanhoPercurso; i++) {
+            let movimentoAleatorio = movimentos[Math.floor(Math.random() * movimentos.length)];
+            percurso.push(movimentoAleatorio);
+        }
+        individuos.push(new Individuo(percurso, 0));
+        agente.individuos = individuos;
+    }
+
+
+}
+
+
 function rodarGame(mundo) {
     document.getElementById("agente").remove();
 
@@ -354,22 +393,20 @@ function rodarGame(mundo) {
     let ouro = mundo.ouro;
     let posicoesWumpus = mundo.posicoesWumpus;
 
-    let movimentos = [];
+    let individuo = agente.individuos[agente.individuoAtual]; //resgata o individuo usado atualmente
+    console.log("individuo: ", agente.individuoAtual, "passo: ", agente.individuos[agente.individuoAtual].i)
+    individuo.percurso[individuo.i](); //acessando o passo atual do individuo no seu percurso
+    individuo.i += 1; //após o passo, soma o indice
 
-    if (mundo.mundo[agente.x - 1] && mundo.mundo[agente.x - 1][agente.y] !== undefined) {
-        movimentos.push(() => agente.moverNorte());
-    }
-    if (mundo.mundo[agente.x + 1] && mundo.mundo[agente.x + 1][agente.y] !== undefined) {
-        movimentos.push(() => agente.moverSul());
-    }
-    if (mundo.mundo[agente.x] && mundo.mundo[agente.x][agente.y + 1] !== undefined) {
-        movimentos.push(() => agente.moverLeste());
-    }
-    if (mundo.mundo[agente.x] && mundo.mundo[agente.x][agente.y - 1] !== undefined) {
-        movimentos.push(() => agente.moverOeste());
+    if (individuo.i == individuo.percurso.length) {
+        individuo.i = 0;
+        agente.individuoAtual += 1;
     }
 
-    movimentos[Math.floor(Math.random() * movimentos.length)]();
+    if (agente.individuoAtual == agente.individuos.length) {
+        agente.individuoAtual = 0;
+    }
+
     agente.pontuacao -= 1;
     document.getElementById("pontuacao").textContent = agente.pontuacao;
     // console.log(agente.x, agente.y);
@@ -488,10 +525,6 @@ function rodarGame(mundo) {
     }
 }
 
-function agenteClique() {
-    rodarGame(mundo)
-}
-
 function salvarMundo(mundo) {
     // Exporta o mundo para JSON
     const mundoJSON = mundo.exportarMundo();
@@ -563,7 +596,8 @@ function carregarMundoPredefinido(nomeArquivo) {
             d = mundoData.tamanho;
             document.getElementById("mapa").innerHTML = "";
             renderizarMapa(mapaTamanhoPixels, mundoData.tamanho, mundo);
-
+            definirPercurso(mundo);
+            console.log(mundo);
             console.log(`Mundo "${nomeArquivo}" carregado com sucesso!`);
         })
         .catch(error => {
@@ -585,13 +619,11 @@ document.getElementById("playPause").addEventListener("click", () => {
         internal = null;
         document.getElementById("playPause").style.backgroundImage = "url(textures/interface/playButton.png)";
 
-        document.getElementById("mapa").addEventListener("click", agenteClique);
     } else {
         internal = setInterval(() => {
             rodarGame(mundo);
         }, velocidades[indiceVelocidade]);
         document.getElementById("playPause").style.backgroundImage = "url(textures/interface/pauseButton.png)";
-        document.getElementById("mapa").removeEventListener("click", agenteClique);
     }
     rodando = !rodando;
 });
@@ -648,10 +680,13 @@ switch (mundoSelecionado) {
     case "aleatorio":
         mundo = new Mundo(d);
         mundo.agente = new Agente(mundo.wumpus, mundo.mundo);
+        definirPercurso(mundo);
+        console.log(mundo.agente.individuos);
         renderizarMapa(mapaTamanhoPixels, d, mundo);
         console.log("Mundo inicial mantido.");
         document.getElementById("botaoSalvarMundo").style.display = "block";
         document.getElementById("botaoImportarMundo").style.display = "block";
+
         break;
     default:
         carregarMundoPredefinido(mundoSelecionado);
@@ -662,8 +697,6 @@ switch (mundoSelecionado) {
 let velocidades = [2000, 1500, 1000, 500, 100];
 let indiceVelocidade = 2;
 document.getElementById("velocidadeLink").textContent = (velocidades[indiceVelocidade] / 1000).toFixed(1);
-
-console.log("agente 3");
 
 let internal = setInterval(() => {
     rodarGame(mundo);
