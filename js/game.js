@@ -10,6 +10,10 @@ switch (agenteEscolhido) {
         script.src = "js/agente2.js";
         document.body.appendChild(script);
         break;
+    case "agente3":
+        script.src = "js/agente3.js";
+        document.body.appendChild(script);
+        break;
     case "agenteManual":
         script.src = "js/agenteManual.js";
         document.body.appendChild(script);
