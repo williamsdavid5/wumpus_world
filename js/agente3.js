@@ -8,7 +8,7 @@ const Pontuacoes = {
     MORTE_WUMPUS: -2000,        // Penalidade por morrer para o Wumpus
     MORTE_BURACO: -2000,        // Penalidade por morrer para um buraco
     VITORIA: 8000,              // Recompensa por vencer o jogo
-    FIM_PERIODO: 500            // Recompensa por terminar o período sem morrer
+    FIM_PERIODO: 1000            // Recompensa por terminar o período sem morrer
 };
 
 class Sala {
@@ -419,9 +419,8 @@ function definirPercurso(mundo) {
     console.log(agente.individuos);
 }
 
-// Seleciona um indivíduo usando torneio
 function selecaoPorTorneio(agente) {
-    let tamanhoTorneio = 3; // Ajuste conforme necessário
+    let tamanhoTorneio = 5; // Ajuste conforme necessário
 
     let torneio = [];
     for (let i = 0; i < tamanhoTorneio; i++) {
@@ -433,14 +432,19 @@ function selecaoPorTorneio(agente) {
     return torneio.reduce((melhor, atual) => (atual.pontuacao > melhor.pontuacao ? atual : melhor));
 }
 
-
-
 function reproduzirEvoluir(mundo) {
     let agente = mundo.agente;
 
-    // Seleciona 4 indivíduos
-    const individuosSelecionados = [];
-    for (let i = 0; i < 4; i++) {
+    // Seleciona o melhor indivíduo da população
+    const melhorIndividuo = agente.individuos.reduce((melhor, atual) =>
+        (atual.pontuacao > melhor.pontuacao ? atual : melhor)
+    );
+    const indexMelhor = agente.individuos.indexOf(melhorIndividuo);
+    agente.individuos.splice(indexMelhor, 1); // Remove o melhor indivíduo da lista
+
+    // Seleciona 3 indivíduos adicionais usando torneio
+    const individuosSelecionados = [melhorIndividuo]; // Inclui o melhor indivíduo
+    for (let i = 0; i < 3; i++) {
         const individuo = selecaoPorTorneio(agente);
         const index = agente.individuos.indexOf(individuo);
         agente.individuos.splice(index, 1); // Remove o indivíduo da lista
