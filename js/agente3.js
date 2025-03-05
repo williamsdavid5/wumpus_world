@@ -8,7 +8,7 @@ const Pontuacoes = {
     MORTE_WUMPUS: -2000,        // Penalidade por morrer para o Wumpus
     MORTE_BURACO: -2000,        // Penalidade por morrer para um buraco
     VITORIA: 8000,              // Recompensa por vencer o jogo
-    FIM_PERIODO: 1000            // Recompensa por terminar o período sem morrer
+    FIM_PERIODO: -500            // Recompensa por terminar o período sem morrer
 };
 
 class Sala {
@@ -420,96 +420,70 @@ function definirPercurso(mundo) {
 }
 
 function selecaoPorTorneio(agente) {
-    let tamanhoTorneio = 5; // Ajuste conforme necessário
+    let tamanhoTorneio = 5;
 
     let torneio = [];
     for (let i = 0; i < tamanhoTorneio; i++) {
         let indiceAleatorio = Math.floor(Math.random() * agente.individuos.length);
         torneio.push(agente.individuos[indiceAleatorio]);
     }
-
-    // O melhor indivíduo do torneio vence
     return torneio.reduce((melhor, atual) => (atual.pontuacao > melhor.pontuacao ? atual : melhor));
 }
 
 function reproduzirEvoluir(mundo) {
     let agente = mundo.agente;
 
-    // Seleciona o melhor indivíduo da população
+    // usa de elitismo para manter o melhor individuo na população
+    // melhora o desempenho do agente em mapas um pouco maiores
     const melhorIndividuo = agente.individuos.reduce((melhor, atual) =>
         (atual.pontuacao > melhor.pontuacao ? atual : melhor)
     );
     const indexMelhor = agente.individuos.indexOf(melhorIndividuo);
-    agente.individuos.splice(indexMelhor, 1); // Remove o melhor indivíduo da lista
+    agente.individuos.splice(indexMelhor, 1);
 
-    // Seleciona 3 indivíduos adicionais usando torneio
-    const individuosSelecionados = [melhorIndividuo]; // Inclui o melhor indivíduo
+    // seleciona 3 indivíduos adicionais usando torneio
+    //esses 3 somados com o melhor, irão para a reprodução
+    const individuosSelecionados = [melhorIndividuo];
     for (let i = 0; i < 3; i++) {
         const individuo = selecaoPorTorneio(agente);
         const index = agente.individuos.indexOf(individuo);
-        agente.individuos.splice(index, 1); // Remove o indivíduo da lista
+        agente.individuos.splice(index, 1);
         individuosSelecionados.push(individuo);
     }
 
-    let individuos = [];
+    let individuos = [melhorIndividuo]; //o melhor individuo, alem de ir para a reprodução, também vai fazer parte da população
+    //isso é elitismo!
 
-    // Gera 10 descendentes a partir de combinações entre os 4 indivíduos selecionados
-    for (let i = 0; i < 10; i++) {
-        // Seleciona 2 indivíduos aleatoriamente para cruzar
-        const individuo1 = individuosSelecionados[Math.floor(Math.random() * individuosSelecionados.length)];
-        const individuo2 = individuosSelecionados[Math.floor(Math.random() * individuosSelecionados.length)];
+    // Gera 9 descendentes a partir de combinações entre os 4 indivíduos selecionados
+    for (let i = 0; i < 9; i++) {
+        let individuo1 = individuosSelecionados[Math.floor(Math.random() * individuosSelecionados.length)];
+        let individuo2;
 
-        // Mistura os vetores de percurso e disparos dos 2 indivíduos selecionados
+        // Garante que individuo2 seja diferente de individuo1
+        do {
+            individuo2 = individuosSelecionados[Math.floor(Math.random() * individuosSelecionados.length)];
+        } while (individuo1 === individuo2);
+
         const percurso = misturarVetores(individuo1.percurso, individuo2.percurso);
         const disparos = misturarVetores(individuo1.disparos, individuo2.disparos);
 
-        // Cria o descendente
         const descendente = new Individuo(percurso, 0, disparos);
 
-        // Aplica mutação
-        mutarIndividuo(descendente, mundo);
+        // Taxa de mutação dinâmica baseada no desempenho do melhor indivíduo
+        const taxaMutacao = 0.1 + (0.2 * (1 - (melhorIndividuo.pontuacao / Pontuacoes.VITORIA)));
+        mutarIndividuo(descendente, mundo, taxaMutacao);
 
-        // Adiciona o descendente à nova população
         individuos.push(descendente);
     }
 
-    // Atualiza a população do agente com os novos descendentes
+
     agente.individuos = individuos;
 
     console.log("nova geração");
     console.log(agente.individuos);
 }
 
-function misturarVetores(vetor1, vetor2) {
-    const novoVetor = [];
-    const tamanhoMaximo = Math.max(vetor1.length, vetor2.length);
-
-    for (let i = 0; i < tamanhoMaximo; i++) {
-        let escolhido;
-
-        if (i < vetor1.length && i < vetor2.length) {
-            escolhido = Math.random() < 0.5 ? vetor1[i] : vetor2[i];
-        } else if (i < vetor1.length) {
-            escolhido = vetor1[i];
-        } else {
-            escolhido = vetor2[i];
-        }
-
-        // Garantir que o escolhido seja uma função válida
-        if (typeof escolhido === "function") {
-            novoVetor.push(escolhido);
-        } else {
-            novoVetor.push(vetor1[0] || vetor2[0]);
-        }
-    }
-
-    return novoVetor;
-}
-
-
-function mutarIndividuo(individuo, mundo) {
-    const taxaMutacao = 0.1;
-
+function mutarIndividuo(individuo, mundo, taxaMutacao) {
     for (let i = 0; i < individuo.percurso.length; i++) {
         if (Math.random() < taxaMutacao) {
             const movimentos = [
@@ -546,6 +520,32 @@ function mutarIndividuo(individuo, mundo) {
         const movimentoAleatorio = movimentos[Math.floor(Math.random() * movimentos.length)];
         individuo.percurso.push(movimentoAleatorio);
     }
+}
+
+function misturarVetores(vetor1, vetor2) {
+    const novoVetor = [];
+    const tamanhoMaximo = Math.max(vetor1.length, vetor2.length);
+
+    for (let i = 0; i < tamanhoMaximo; i++) {
+        let escolhido;
+
+        if (i < vetor1.length && i < vetor2.length) {
+            escolhido = Math.random() < 0.5 ? vetor1[i] : vetor2[i];
+        } else if (i < vetor1.length) {
+            escolhido = vetor1[i];
+        } else {
+            escolhido = vetor2[i];
+        }
+
+        // Garantir que o escolhido seja uma função válida
+        if (typeof escolhido === "function") {
+            novoVetor.push(escolhido);
+        } else {
+            novoVetor.push(vetor1[0] || vetor2[0]);
+        }
+    }
+
+    return novoVetor;
 }
 
 function rodarGame(mundo) {
@@ -914,7 +914,7 @@ switch (mundoSelecionado) {
 
 }
 
-let velocidades = [2000, 1500, 1000, 500, 100];
+let velocidades = [2000, 1500, 1000, 500, 100, 1];
 let indiceVelocidade = 2;
 document.getElementById("velocidadeLink").textContent = (velocidades[indiceVelocidade] / 1000).toFixed(1);
 
