@@ -586,16 +586,21 @@ document.getElementById("playPause").addEventListener("click", () => {
 });
 
 document.getElementById("velocidadeLink").addEventListener("click", () => {
-    indiceVelocidade = (indiceVelocidade + 1) % velocidades.length;
+    if (rodando) {
+        indiceVelocidade = (indiceVelocidade + 1) % velocidades.length;
 
-    clearInterval(internal);
-    internal = null;
+        clearInterval(internal);
+        internal = null;
 
-    internal = setInterval(() => {
-        rodarGameAleatorio(mundo);
-    }, velocidades[indiceVelocidade]);
+        internal = setInterval(() => {
+            rodarGame(mundo);
+        }, velocidades[indiceVelocidade]);
 
-    document.getElementById("velocidadeLink").textContent = (velocidades[indiceVelocidade] / 1000).toFixed(1);
+        document.getElementById("velocidadeLink").textContent = (velocidades[indiceVelocidade] / 1000).toFixed(1);
+    } else {
+        indiceVelocidade = (indiceVelocidade + 1) % velocidades.length;
+        document.getElementById("velocidadeLink").textContent = (velocidades[indiceVelocidade] / 1000).toFixed(1);
+    }
 });
 
 document.getElementById("atualizarMundo").addEventListener("click", function (event) {

@@ -1,3 +1,16 @@
+const Pontuacoes = {
+    MOVIMENTO_INVALIDO: -2000, // Penalidade por movimento inválido
+    MOVIMENTO_VALIDO: -1,       // Penalidade por movimento válido
+    OURO_COLETADO: 2000,        // Recompensa por coletar ouro
+    WUMPUS_MORTO: 2000,         // Recompensa por matar o Wumpus
+    FLECHA_DISPARADA: -10,      // Penalidade por disparar uma flecha
+    FLECHA_ERRADA: -1000,        // Penalidade por errar o disparo
+    MORTE_WUMPUS: -2000,        // Penalidade por morrer para o Wumpus
+    MORTE_BURACO: -2000,        // Penalidade por morrer para um buraco
+    VITORIA: 8000,              // Recompensa por vencer o jogo
+    FIM_PERIODO: 500            // Recompensa por terminar o período sem morrer
+};
+
 class Sala {
     constructor(x, y) {
         this.x = x;
@@ -51,10 +64,10 @@ class Agente {
         if (novaPosicaoX >= 0 && this.mundo[novaPosicaoX] && this.mundo[novaPosicaoX][this.y]) {
             this.sala = this.mundo[novaPosicaoX][this.y];
             this.x = novaPosicaoX;
-            this.pontuacao -= 1000;
+            this.pontuacao += Pontuacoes.MOVIMENTO_VALIDO;
             console.log("moveu norte", this.x, this.y);
         } else {
-            this.pontuacao -= 1000; // Penaliza a pontuação mesmo se o movimento for inválido
+            this.pontuacao += Pontuacoes.MOVIMENTO_INVALIDO;
             console.log("erro ao mover para o norte", this.x, this.y);
         }
     }
@@ -64,10 +77,10 @@ class Agente {
         if (novaPosicaoX < this.mundo.length && this.mundo[novaPosicaoX] && this.mundo[novaPosicaoX][this.y]) {
             this.sala = this.mundo[novaPosicaoX][this.y];
             this.x = novaPosicaoX;
-            this.pontuacao -= 1000;
+            this.pontuacao += Pontuacoes.MOVIMENTO_VALIDO;
             console.log("moveu sul", this.x, this.y);
         } else {
-            this.pontuacao -= 1000; // Penaliza a pontuação mesmo se o movimento for inválido
+            this.pontuacao += Pontuacoes.MOVIMENTO_INVALIDO;
             console.log("erro ao mover para o sul", this.x, this.y);
         }
     }
@@ -77,10 +90,10 @@ class Agente {
         if (novaPosicaoY < this.mundo[this.x].length && this.mundo[this.x][novaPosicaoY]) {
             this.sala = this.mundo[this.x][novaPosicaoY];
             this.y = novaPosicaoY;
-            this.pontuacao -= 1000;
+            this.pontuacao += Pontuacoes.MOVIMENTO_VALIDO;
             console.log("moveu leste", this.x, this.y);
         } else {
-            this.pontuacao -= 1000; // Penaliza a pontuação mesmo se o movimento for inválido
+            this.pontuacao += Pontuacoes.MOVIMENTO_INVALIDO;
             console.log("erro ao mover para o leste", this.x, this.y);
         }
     }
@@ -90,10 +103,10 @@ class Agente {
         if (novaPosicaoY >= 0 && this.mundo[this.x][novaPosicaoY]) {
             this.sala = this.mundo[this.x][novaPosicaoY];
             this.y = novaPosicaoY;
-            this.pontuacao -= 1000;
+            this.pontuacao += Pontuacoes.MOVIMENTO_VALIDO;
             console.log("moveu oeste", this.x, this.y);
         } else {
-            this.pontuacao -= 1000; // Penaliza a pontuação mesmo se o movimento for inválido
+            this.pontuacao += Pontuacoes.MOVIMENTO_INVALIDO;
             console.log("erro ao mover para o oeste", this.x, this.y);
         }
     }
@@ -143,10 +156,11 @@ class Agente {
     }
 }
 
+
 class Mundo {
     constructor(d) {
         this.mundo = [];
-        this.contadorExecucoes = 0;
+        this.contadorExecucoes = 1;
 
         for (let x = 0; x < d; x++) {
             let temp = [];
@@ -165,7 +179,6 @@ class Mundo {
 
         this.adicionaEntidades(d);
         let agente = null;
-        this.agentesNumero = 0;
 
         this.flechasDisparadas = 0;
         this.wumpusMortos = 0;
@@ -384,7 +397,7 @@ function definirPercurso(mundo) {
     let individuos = [];
     for (let j = 0; j < 10; j++) {
         let percurso = [];
-        let tamanhoPercurso = Math.floor(Math.random() * d + 1) + d;
+        let tamanhoPercurso = Math.floor(Math.random() * (d * 2)) + d * 2;
 
         //percurso aleatório que representa o dna do agente
         for (let i = 0; i < tamanhoPercurso; i++) {
@@ -402,18 +415,24 @@ function definirPercurso(mundo) {
         individuos.push(new Individuo(percurso, 0, disparos));
     }
     agente.individuos = individuos;
+    console.log("geração 0");
     console.log(agente.individuos);
 }
 
-//para selecionar 1 indivíduo usando a seleção por roleta
+// seleciona um individuo usando a roleta
 function selecaoPorRoleta(agente) {
-    let pontuacaoTotal = agente.individuos.reduce((total, individuo) => total + individuo.pontuacao, 0);
+    // Encontrar a menor pontuação para ajustá-las todas para valores positivos
+    let menorPontuacao = Math.min(...agente.individuos.map(ind => ind.pontuacao));
+
+    let ajuste = Math.abs(menorPontuacao) + 1; // Garante que todas fiquem positivas
+
+    let pontuacaoTotal = agente.individuos.reduce((total, individuo) => total + (individuo.pontuacao + ajuste), 0);
 
     let valorRoleta = Math.random() * pontuacaoTotal;
 
     let acumulado = 0;
     for (let i = 0; i < agente.individuos.length; i++) {
-        acumulado += agente.individuos[i].pontuacao;
+        acumulado += agente.individuos[i].pontuacao + ajuste;
         if (acumulado >= valorRoleta) {
             return agente.individuos[i];
         }
@@ -422,22 +441,105 @@ function selecaoPorRoleta(agente) {
     return agente.individuos[agente.individuos.length - 1];
 }
 
+
+//a reprodução, mistura valores de ambos os vetores de forma aleatoria
+function misturarVetores(vetor1, vetor2) {
+    const novoVetor = [];
+    const tamanhoMaximo = Math.max(vetor1.length, vetor2.length);
+
+    for (let i = 0; i < tamanhoMaximo; i++) {
+        let escolhido;
+
+        if (i < vetor1.length && i < vetor2.length) {
+            escolhido = Math.random() < 0.5 ? vetor1[i] : vetor2[i];
+        } else if (i < vetor1.length) {
+            escolhido = vetor1[i];
+        } else {
+            escolhido = vetor2[i];
+        }
+
+        // Garantir que o escolhido seja uma função válida
+        if (typeof escolhido === "function") {
+            novoVetor.push(escolhido);
+        } else {
+            novoVetor.push(vetor1[0] || vetor2[0]);
+        }
+    }
+
+    return novoVetor;
+}
+
+
 function reproduzirEvoluir(mundo) {
     let agente = mundo.agente;
 
     const individuo1 = selecaoPorRoleta(agente);
-
-    //remove o primeiro da lista para garantir que nao seja selecionado novamente
     const index1 = agente.individuos.indexOf(individuo1);
-    agente.individuos.splice(index1, 1);
+    agente.individuos.splice(index1, 1); // Remove o primeiro indivíduo da lista
 
     const individuo2 = selecaoPorRoleta(agente);
-
     const index2 = agente.individuos.indexOf(individuo2);
-    agente.individuos.splice(index2, 1);
 
-    console.log("Indivíduo 1 selecionado:", individuo1);
-    console.log("Indivíduo 2 selecionado:", individuo2);
+    let individuos = [];
+
+    // Gera 10 descendentes
+    for (let i = 0; i < 10; i++) {
+        const percurso = misturarVetores(individuo1.percurso, individuo2.percurso);
+        const disparos = misturarVetores(individuo1.disparos, individuo2.disparos);
+
+        const descendente = new Individuo(percurso, 0, disparos);
+
+        mutarIndividuo(descendente, mundo);
+
+        individuos.push(descendente);
+    }
+
+    agente.individuos = [];
+    agente.individuos = individuos;
+
+    console.log("nova geração");
+    console.log(agente.individuos);
+}
+
+function mutarIndividuo(individuo, mundo) {
+    const taxaMutacao = 0.1;
+
+    for (let i = 0; i < individuo.percurso.length; i++) {
+        if (Math.random() < taxaMutacao) {
+            const movimentos = [
+                mundo.agente.moverNorte.bind(mundo.agente),
+                mundo.agente.moverSul.bind(mundo.agente),
+                mundo.agente.moverLeste.bind(mundo.agente),
+                mundo.agente.moverOeste.bind(mundo.agente)
+            ];
+            individuo.percurso[i] = movimentos[Math.floor(Math.random() * movimentos.length)];
+        }
+    }
+
+    for (let i = 0; i < individuo.disparos.length; i++) {
+        if (Math.random() < taxaMutacao) {
+            const direcoesDisparo = [
+                mundo.agente.dispararNorte.bind(mundo.agente),
+                mundo.agente.dispararSul.bind(mundo.agente),
+                mundo.agente.dispararLeste.bind(mundo.agente),
+                mundo.agente.dispararOeste.bind(mundo.agente)
+            ];
+            individuo.disparos[i] = direcoesDisparo[Math.floor(Math.random() * direcoesDisparo.length)];
+        }
+    }
+
+    const movimentosExtras = Math.floor(Math.random() * (mundo.mundo.length / 2)); // d/2 movimentos extras
+    const movimentos = [
+        mundo.agente.moverNorte.bind(mundo.agente),
+        mundo.agente.moverSul.bind(mundo.agente),
+        mundo.agente.moverLeste.bind(mundo.agente),
+        mundo.agente.moverOeste.bind(mundo.agente)
+    ];
+
+    for (let i = 0; i < movimentosExtras; i++) {
+        const movimentoAleatorio = movimentos[Math.floor(Math.random() * movimentos.length)];
+        individuo.percurso.push(movimentoAleatorio);
+    }
 }
 
 function rodarGame(mundo) {
@@ -457,8 +559,14 @@ function rodarGame(mundo) {
     if (individuo.i == individuo.percurso.length) {
         //zera o indice do agente atual, atribui a pontuação, zera a pontuação do agente e altera o indice
         individuo.i = 0;
+        agente.pontuacao += Pontuacoes.FIM_PERIODO;
         individuo.pontuacao = agente.pontuacao;
         agente.pontuacao = 0;
+
+        //nao terminar é consierado morte
+        agente.mortes += 1;
+        document.getElementById("mortesPontuacao").textContent = agente.mortes;
+
         agente.x = agente.y = 0;
         restaurarMundo(mundo, posicoesOuro, posicoesWumpus);
         agente.flechas = mundo.wumpus;
@@ -474,10 +582,11 @@ function rodarGame(mundo) {
         // console.log(agente.individuos);
         reproduzirEvoluir(mundo);
         agente.individuoAtual = 0;
-        document.getElementById("logPontuacao").value = "-- GERAÇÃO " + agente.individuoAtual + " --\n" + document.getElementById("logPontuacao").value;
+        document.getElementById("logPontuacao").value = "-- GERAÇÃO " + mundo.contadorExecucoes + " --\n" + document.getElementById("logPontuacao").value;
+        mundo.contadorExecucoes += 1;
     }
 
-    agente.pontuacao -= 1;
+    agente.pontuacao -= Pontuacoes.MOVIMENTO_VALIDO;
     document.getElementById("pontuacao").textContent = agente.pontuacao;
     // console.log(agente.x, agente.y);
 
@@ -487,7 +596,7 @@ function rodarGame(mundo) {
             agente.x = agente.y = 0;
             agente.mortes += 1;
             agente.ouro = 0;
-            agente.pontuacao -= 1000;
+            agente.pontuacao += Pontuacoes.MORTE_WUMPUS;
 
             agente.flechas = mundo.wumpus;
             mundo.mortesPorWumpus += 1;
@@ -500,8 +609,10 @@ function rodarGame(mundo) {
             agente.individuoAtual += 1;
 
             if (agente.individuoAtual == agente.individuos.length) {
+                reproduzirEvoluir(mundo);
                 agente.individuoAtual = 0;
-                document.getElementById("logPontuacao").value = "-- GERAÇÃO " + agente.individuoAtual + " --\n" + document.getElementById("logPontuacao").value;
+                document.getElementById("logPontuacao").value = "-- GERAÇÃO " + mundo.contadorExecucoes + " --\n" + document.getElementById("logPontuacao").value;
+                mundo.contadorExecucoes += 1;
             }
 
 
@@ -517,7 +628,7 @@ function rodarGame(mundo) {
     if (mundo.mundo[agente.x][agente.y].buraco) {
         agente.x = agente.y = 0;
         agente.mortes += 1;
-        agente.pontuacao -= 1000;
+        agente.pontuacao += Pontuacoes.MORTE_BURACO;
 
         agente.ouro = 0;
         agente.flechas = mundo.wumpus;
@@ -531,8 +642,10 @@ function rodarGame(mundo) {
         agente.individuoAtual += 1;
 
         if (agente.individuoAtual == agente.individuos.length) {
+            reproduzirEvoluir(mundo);
             agente.individuoAtual = 0;
-            document.getElementById("logPontuacao").value = "-- GERAÇÃO " + agente.individuoAtual + " --\n" + document.getElementById("logPontuacao").value;
+            document.getElementById("logPontuacao").value = "-- GERAÇÃO " + mundo.contadorExecucoes + " --\n" + document.getElementById("logPontuacao").value;
+            mundo.contadorExecucoes += 1;
         }
 
 
@@ -548,14 +661,14 @@ function rodarGame(mundo) {
         posicoesOuro.push([agente.x, agente.y]);
         mundo.mundo[agente.x][agente.y].ouro = false;
         agente.ouro += 1;
-        agente.pontuacao += 500;
+        agente.pontuacao += Pontuacoes.OURO_COLETADO;
         document.getElementById(agente.x + "," + agente.y + "_ouroItem").remove();
         document.getElementById("pontuacao").textContent = agente.pontuacao;
     }
 
     //sentiu fedor, disparou
     if (mundo.mundo[agente.x][agente.y].fedor && agente.flechas > 0) {
-        agente.pontuacao -= 10;
+        agente.pontuacao += Pontuacoes.FLECHA_DISPARADA;
         document.getElementById("pontuacao").textContent = agente.pontuacao;
         mundo.flechasDisparadas += 1;
 
@@ -572,11 +685,13 @@ function rodarGame(mundo) {
 
         if (morreu[0]) {
             // console.log(morreu[1], morreu[2]);
-            agente.pontuacao += 500;
+            agente.pontuacao += Pontuacoes.WUMPUS_MORTO;
             posicoesWumpus.push([morreu[1], morreu[2]]);
             document.getElementById(morreu[1] + "," + morreu[2] + "_wumpus").src = "textures/canvaWumpusMorto.png";
             mundo.wumpusMortos += 1;
             document.getElementById("Wumpus Mortos").textContent = "Canvas mortos: " + mundo.wumpusMortos;
+        } else {
+            agente.pontuacao += Pontuacoes.FLECHA_ERRADA;
         }
 
     }
@@ -584,7 +699,7 @@ function rodarGame(mundo) {
     // chegou em 0,0 com ouro
     if (agente.x == 0 && agente.y == 0 && agente.ouro == ouro) {
         agente.vitorias += 1;
-        agente.pontuacao += 1000;
+        agente.pontuacao += Pontuacoes.VITORIA;
         agente.ouro = 0;
 
         agente.flechas = mundo.wumpus;
@@ -594,12 +709,14 @@ function rodarGame(mundo) {
         //quando o agente é morto e seu percurso nao acabou, o game ja encerra alterando o indice do agente testado
         individuo.pontuacao = agente.pontuacao;
         individuo.i = 0;
-        document.getElementById("logPontuacao").value = "Agente " + agente.individuoAtual + ": " + individuo.pontuacao + ", morto por buraco" + "\n" + document.getElementById("logPontuacao").value;
+        document.getElementById("logPontuacao").value = "Agente " + agente.individuoAtual + ": " + individuo.pontuacao + ", VITÓRIA !!!!!!!!!!!!!!!!!" + "\n" + document.getElementById("logPontuacao").value;
         agente.individuoAtual += 1;
 
         if (agente.individuoAtual == agente.individuos.length) {
+            reproduzirEvoluir(mundo);
             agente.individuoAtual = 0;
-            document.getElementById("logPontuacao").value = "-- GERAÇÃO " + agente.individuoAtual + " --\n" + document.getElementById("logPontuacao").value;
+            document.getElementById("logPontuacao").value = "-- GERAÇÃO " + mundo.contadorExecucoes + " --\n" + document.getElementById("logPontuacao").value;
+            mundo.contadorExecucoes += 1;
         }
 
 
@@ -721,16 +838,21 @@ document.getElementById("playPause").addEventListener("click", () => {
 });
 
 document.getElementById("velocidadeLink").addEventListener("click", () => {
-    indiceVelocidade = (indiceVelocidade + 1) % velocidades.length;
+    if (rodando) {
+        indiceVelocidade = (indiceVelocidade + 1) % velocidades.length;
 
-    clearInterval(internal);
-    internal = null;
+        clearInterval(internal);
+        internal = null;
 
-    internal = setInterval(() => {
-        rodarGame(mundo);
-    }, velocidades[indiceVelocidade]);
+        internal = setInterval(() => {
+            rodarGame(mundo);
+        }, velocidades[indiceVelocidade]);
 
-    document.getElementById("velocidadeLink").textContent = (velocidades[indiceVelocidade] / 1000).toFixed(1);
+        document.getElementById("velocidadeLink").textContent = (velocidades[indiceVelocidade] / 1000).toFixed(1);
+    } else {
+        indiceVelocidade = (indiceVelocidade + 1) % velocidades.length;
+        document.getElementById("velocidadeLink").textContent = (velocidades[indiceVelocidade] / 1000).toFixed(1);
+    }
 });
 
 document.getElementById("atualizarMundo").addEventListener("click", function (event) {
