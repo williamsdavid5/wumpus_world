@@ -18,9 +18,11 @@ class Wumpus {
 
 //representa cada individuo da população
 class Individuo {
-    constructor(percurso, pontuacao) {
+    constructor(percurso, pontuacao, disparos) {
         this.percurso = percurso; //vetor percurso, guarda uma condfiguração aleatoria de movimentos
+        this.disparos = disparos; //vetor de disparos, para quando o  agente detectar fedor
         this.i = 0; //indice do percurso
+        this.j = 0 //indice dos disparos
         this.pontuacao = pontuacao;
     }
 }
@@ -360,30 +362,83 @@ function restaurarMundo(mundo, posicoesOuro, posicoesWumpus) {
 
 }
 
+//para criar um percurso inicial aleatório
 function definirPercurso(mundo) {
     let agente = mundo.agente;
+    //direções de movimentos possíveis
     let movimentos = [
         agente.moverNorte.bind(agente),
         agente.moverSul.bind(agente),
         agente.moverLeste.bind(agente),
         agente.moverOeste.bind(agente)
     ];
+
+    //direções de disparo possíveis
+    const direcoesDisparo = [
+        agente.dispararNorte.bind(agente),
+        agente.dispararSul.bind(agente),
+        agente.dispararLeste.bind(agente),
+        agente.dispararOeste.bind(agente)
+    ];
+
     let individuos = [];
-    for (let j = 0; j <= 10; j++) {
+    for (let j = 0; j < 10; j++) {
         let percurso = [];
         let tamanhoPercurso = Math.floor(Math.random() * d + 1) + d;
 
+        //percurso aleatório que representa o dna do agente
         for (let i = 0; i < tamanhoPercurso; i++) {
             let movimentoAleatorio = movimentos[Math.floor(Math.random() * movimentos.length)];
             percurso.push(movimentoAleatorio);
         }
-        individuos.push(new Individuo(percurso, 0));
-        agente.individuos = individuos;
+
+        //uma lista de disparos aleatórios referentes à exatamente a quantidade de flechas do agente
+        let disparos = [];
+        for (let i = 0; i < agente.flechas; i++) {
+            let disparoAleatorio = direcoesDisparo[Math.floor(Math.random() * direcoesDisparo.length)];
+            disparos.push(disparoAleatorio);
+        }
+
+        individuos.push(new Individuo(percurso, 0, disparos));
     }
-
-
+    agente.individuos = individuos;
+    console.log(agente.individuos);
 }
 
+//para selecionar 1 indivíduo usando a seleção por roleta
+function selecaoPorRoleta(agente) {
+    let pontuacaoTotal = agente.individuos.reduce((total, individuo) => total + individuo.pontuacao, 0);
+
+    let valorRoleta = Math.random() * pontuacaoTotal;
+
+    let acumulado = 0;
+    for (let i = 0; i < agente.individuos.length; i++) {
+        acumulado += agente.individuos[i].pontuacao;
+        if (acumulado >= valorRoleta) {
+            return agente.individuos[i];
+        }
+    }
+
+    return agente.individuos[agente.individuos.length - 1];
+}
+
+function reproduzirEvoluir(mundo) {
+    let agente = mundo.agente;
+
+    const individuo1 = selecaoPorRoleta(agente);
+
+    //remove o primeiro da lista para garantir que nao seja selecionado novamente
+    const index1 = agente.individuos.indexOf(individuo1);
+    agente.individuos.splice(index1, 1);
+
+    const individuo2 = selecaoPorRoleta(agente);
+
+    const index2 = agente.individuos.indexOf(individuo2);
+    agente.individuos.splice(index2, 1);
+
+    console.log("Indivíduo 1 selecionado:", individuo1);
+    console.log("Indivíduo 2 selecionado:", individuo2);
+}
 
 function rodarGame(mundo) {
     document.getElementById("agente").remove();
@@ -398,13 +453,28 @@ function rodarGame(mundo) {
     individuo.percurso[individuo.i](); //acessando o passo atual do individuo no seu percurso
     individuo.i += 1; //após o passo, soma o indice
 
+    //verifica se o percurso do agente ja acabou comparando o indice com a quantidade de movimentos
     if (individuo.i == individuo.percurso.length) {
+        //zera o indice do agente atual, atribui a pontuação, zera a pontuação do agente e altera o indice
         individuo.i = 0;
+        individuo.pontuacao = agente.pontuacao;
+        agente.pontuacao = 0;
+        agente.x = agente.y = 0;
+        restaurarMundo(mundo, posicoesOuro, posicoesWumpus);
+        agente.flechas = mundo.wumpus;
+        agente.ouro = 0;
+
+        document.getElementById("logPontuacao").value = "Agente " + agente.individuoAtual + ": " + individuo.pontuacao + ", fim do percurso" + "\n" + document.getElementById("logPontuacao").value;
         agente.individuoAtual += 1;
+
     }
 
+    // caso o indice passe, ele volta
     if (agente.individuoAtual == agente.individuos.length) {
+        // console.log(agente.individuos);
+        reproduzirEvoluir(mundo);
         agente.individuoAtual = 0;
+        document.getElementById("logPontuacao").value = "-- GERAÇÃO " + agente.individuoAtual + " --\n" + document.getElementById("logPontuacao").value;
     }
 
     agente.pontuacao -= 1;
@@ -419,12 +489,22 @@ function rodarGame(mundo) {
             agente.ouro = 0;
             agente.pontuacao -= 1000;
 
-            mundo.agentesNumero += 1;
-            document.getElementById("logPontuacao").value = "Agente " + mundo.agentesNumero + ": " + agente.pontuacao + ", morto por canva" + "\n" + document.getElementById("logPontuacao").value;
-
             agente.flechas = mundo.wumpus;
             mundo.mortesPorWumpus += 1;
             restaurarMundo(mundo, posicoesOuro, posicoesWumpus);
+
+            //quando o agente é morto e seu percurso nao acabou, o game ja encerra alterando o indice do agente testado
+            individuo.pontuacao = agente.pontuacao;
+            individuo.i = 0;
+            document.getElementById("logPontuacao").value = "Agente " + agente.individuoAtual + ": " + individuo.pontuacao + ", morto por wumpus" + "\n" + document.getElementById("logPontuacao").value;
+            agente.individuoAtual += 1;
+
+            if (agente.individuoAtual == agente.individuos.length) {
+                agente.individuoAtual = 0;
+                document.getElementById("logPontuacao").value = "-- GERAÇÃO " + agente.individuoAtual + " --\n" + document.getElementById("logPontuacao").value;
+            }
+
+
             agente.pontuacao = 0;
             document.getElementById("mortesPontuacao").textContent = agente.mortes;
             document.getElementById("flechasNumero").textContent = agente.flechas;
@@ -439,13 +519,23 @@ function rodarGame(mundo) {
         agente.mortes += 1;
         agente.pontuacao -= 1000;
 
-        mundo.agentesNumero += 1;
-        document.getElementById("logPontuacao").value = "Agente " + mundo.agentesNumero + ": " + agente.pontuacao + ", morto por buraco" + "\n" + document.getElementById("logPontuacao").value;
-
         agente.ouro = 0;
         agente.flechas = mundo.wumpus;
         mundo.mortesPorBuraco += 1;
         restaurarMundo(mundo, posicoesOuro, posicoesWumpus);
+
+        //quando o agente é morto e seu percurso nao acabou, o game ja encerra alterando o indice do agente testado
+        individuo.pontuacao = agente.pontuacao;
+        individuo.i = 0;
+        document.getElementById("logPontuacao").value = "Agente " + agente.individuoAtual + ": " + individuo.pontuacao + ", morto por buraco" + "\n" + document.getElementById("logPontuacao").value;
+        agente.individuoAtual += 1;
+
+        if (agente.individuoAtual == agente.individuos.length) {
+            agente.individuoAtual = 0;
+            document.getElementById("logPontuacao").value = "-- GERAÇÃO " + agente.individuoAtual + " --\n" + document.getElementById("logPontuacao").value;
+        }
+
+
         agente.pontuacao = 0;
         document.getElementById("mortesPontuacao").textContent = agente.mortes;
         document.getElementById("flechasNumero").textContent = agente.flechas;
@@ -465,25 +555,17 @@ function rodarGame(mundo) {
 
     //sentiu fedor, disparou
     if (mundo.mundo[agente.x][agente.y].fedor && agente.flechas > 0) {
-        let disparos = [];
-
-        if (mundo.mundo[agente.x - 1] && mundo.mundo[agente.x - 1][agente.y] !== undefined) {
-            disparos.push(() => agente.dispararNorte());
-        }
-        if (mundo.mundo[agente.x + 1] && mundo.mundo[agente.x + 1][agente.y] !== undefined) {
-            disparos.push(() => agente.dispararSul());
-        }
-        if (mundo.mundo[agente.x] && mundo.mundo[agente.x][agente.y + 1] !== undefined) {
-            disparos.push(() => agente.dispararLeste());
-        }
-        if (mundo.mundo[agente.x] && mundo.mundo[agente.x][agente.y - 1] !== undefined) {
-            disparos.push(() => agente.dispararOeste());
-        }
-
         agente.pontuacao -= 10;
         document.getElementById("pontuacao").textContent = agente.pontuacao;
         mundo.flechasDisparadas += 1;
-        let morreu = disparos[Math.floor(Math.random() * disparos.length)]();
+
+        //caso o agente sinta o fedor, ele usará os disparos de sua lista
+        let morreu = individuo.disparos[individuo.j]();
+        individuo.j += 1;
+
+        if (individuo.j == individuo.disparos.length) {
+            individuo.j = 0;
+        }
 
         document.getElementById("flechasNumero").textContent = agente.flechas;
         document.getElementById("Flechas disparadas").textContent = "Tiros disparados: " + mundo.flechasDisparadas;
@@ -505,12 +587,22 @@ function rodarGame(mundo) {
         agente.pontuacao += 1000;
         agente.ouro = 0;
 
-        mundo.agentesNumero += 1;
-        document.getElementById("logPontuacao").value = "Agente " + mundo.agentesNumero + ": " + agente.pontuacao + ", VITÓRIA!!!!!!!!!!!!!!!!" + "\n" + document.getElementById("logPontuacao").value;
-
         agente.flechas = mundo.wumpus;
         mundo.ouroColetado += 1;
         restaurarMundo(mundo, posicoesOuro, posicoesWumpus);
+
+        //quando o agente é morto e seu percurso nao acabou, o game ja encerra alterando o indice do agente testado
+        individuo.pontuacao = agente.pontuacao;
+        individuo.i = 0;
+        document.getElementById("logPontuacao").value = "Agente " + agente.individuoAtual + ": " + individuo.pontuacao + ", morto por buraco" + "\n" + document.getElementById("logPontuacao").value;
+        agente.individuoAtual += 1;
+
+        if (agente.individuoAtual == agente.individuos.length) {
+            agente.individuoAtual = 0;
+            document.getElementById("logPontuacao").value = "-- GERAÇÃO " + agente.individuoAtual + " --\n" + document.getElementById("logPontuacao").value;
+        }
+
+
         agente.pontuacao = 0;
         document.getElementById("Ouro Coletado").textContent = "Azedinhas coletadas: " + mundo.ouroColetado;
         document.getElementById("vitoriasPontuacao").textContent = agente.vitorias;
