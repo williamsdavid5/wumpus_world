@@ -1,8 +1,8 @@
 const Pontuacoes = {
     MOVIMENTO_INVALIDO: -2000, // Penalidade por movimento inválido
     MOVIMENTO_VALIDO: -1,       // Penalidade por movimento válido
-    OURO_COLETADO: 2000,        // Recompensa por coletar ouro
-    WUMPUS_MORTO: 2000,         // Recompensa por matar o Wumpus
+    OURO_COLETADO: 4000,        // Recompensa por coletar ouro
+    WUMPUS_MORTO: 4000,         // Recompensa por matar o Wumpus
     FLECHA_DISPARADA: -10,      // Penalidade por disparar uma flecha
     FLECHA_ERRADA: -1000,        // Penalidade por errar o disparo
     MORTE_WUMPUS: -2000,        // Penalidade por morrer para o Wumpus
@@ -419,30 +419,63 @@ function definirPercurso(mundo) {
     console.log(agente.individuos);
 }
 
-// seleciona um individuo usando a roleta
-function selecaoPorRoleta(agente) {
-    // Encontrar a menor pontuação para ajustá-las todas para valores positivos
-    let menorPontuacao = Math.min(...agente.individuos.map(ind => ind.pontuacao));
+// Seleciona um indivíduo usando torneio
+function selecaoPorTorneio(agente) {
+    let tamanhoTorneio = 3; // Ajuste conforme necessário
 
-    let ajuste = Math.abs(menorPontuacao) + 1; // Garante que todas fiquem positivas
-
-    let pontuacaoTotal = agente.individuos.reduce((total, individuo) => total + (individuo.pontuacao + ajuste), 0);
-
-    let valorRoleta = Math.random() * pontuacaoTotal;
-
-    let acumulado = 0;
-    for (let i = 0; i < agente.individuos.length; i++) {
-        acumulado += agente.individuos[i].pontuacao + ajuste;
-        if (acumulado >= valorRoleta) {
-            return agente.individuos[i];
-        }
+    let torneio = [];
+    for (let i = 0; i < tamanhoTorneio; i++) {
+        let indiceAleatorio = Math.floor(Math.random() * agente.individuos.length);
+        torneio.push(agente.individuos[indiceAleatorio]);
     }
 
-    return agente.individuos[agente.individuos.length - 1];
+    // O melhor indivíduo do torneio vence
+    return torneio.reduce((melhor, atual) => (atual.pontuacao > melhor.pontuacao ? atual : melhor));
 }
 
 
-//a reprodução, mistura valores de ambos os vetores de forma aleatoria
+
+function reproduzirEvoluir(mundo) {
+    let agente = mundo.agente;
+
+    // Seleciona 4 indivíduos
+    const individuosSelecionados = [];
+    for (let i = 0; i < 4; i++) {
+        const individuo = selecaoPorTorneio(agente);
+        const index = agente.individuos.indexOf(individuo);
+        agente.individuos.splice(index, 1); // Remove o indivíduo da lista
+        individuosSelecionados.push(individuo);
+    }
+
+    let individuos = [];
+
+    // Gera 10 descendentes a partir de combinações entre os 4 indivíduos selecionados
+    for (let i = 0; i < 10; i++) {
+        // Seleciona 2 indivíduos aleatoriamente para cruzar
+        const individuo1 = individuosSelecionados[Math.floor(Math.random() * individuosSelecionados.length)];
+        const individuo2 = individuosSelecionados[Math.floor(Math.random() * individuosSelecionados.length)];
+
+        // Mistura os vetores de percurso e disparos dos 2 indivíduos selecionados
+        const percurso = misturarVetores(individuo1.percurso, individuo2.percurso);
+        const disparos = misturarVetores(individuo1.disparos, individuo2.disparos);
+
+        // Cria o descendente
+        const descendente = new Individuo(percurso, 0, disparos);
+
+        // Aplica mutação
+        mutarIndividuo(descendente, mundo);
+
+        // Adiciona o descendente à nova população
+        individuos.push(descendente);
+    }
+
+    // Atualiza a população do agente com os novos descendentes
+    agente.individuos = individuos;
+
+    console.log("nova geração");
+    console.log(agente.individuos);
+}
+
 function misturarVetores(vetor1, vetor2) {
     const novoVetor = [];
     const tamanhoMaximo = Math.max(vetor1.length, vetor2.length);
@@ -469,37 +502,6 @@ function misturarVetores(vetor1, vetor2) {
     return novoVetor;
 }
 
-
-function reproduzirEvoluir(mundo) {
-    let agente = mundo.agente;
-
-    const individuo1 = selecaoPorRoleta(agente);
-    const index1 = agente.individuos.indexOf(individuo1);
-    agente.individuos.splice(index1, 1); // Remove o primeiro indivíduo da lista
-
-    const individuo2 = selecaoPorRoleta(agente);
-    const index2 = agente.individuos.indexOf(individuo2);
-
-    let individuos = [];
-
-    // Gera 10 descendentes
-    for (let i = 0; i < 10; i++) {
-        const percurso = misturarVetores(individuo1.percurso, individuo2.percurso);
-        const disparos = misturarVetores(individuo1.disparos, individuo2.disparos);
-
-        const descendente = new Individuo(percurso, 0, disparos);
-
-        mutarIndividuo(descendente, mundo);
-
-        individuos.push(descendente);
-    }
-
-    agente.individuos = [];
-    agente.individuos = individuos;
-
-    console.log("nova geração");
-    console.log(agente.individuos);
-}
 
 function mutarIndividuo(individuo, mundo) {
     const taxaMutacao = 0.1;
