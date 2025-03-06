@@ -1,14 +1,14 @@
 const Pontuacoes = {
-    MOVIMENTO_INVALIDO: -2000, // Penalidade por movimento inválido
+    MOVIMENTO_INVALIDO: -1000, // Penalidade por movimento inválido
     MOVIMENTO_VALIDO: -1,       // Penalidade por movimento válido
-    OURO_COLETADO: 4000,        // Recompensa por coletar ouro
-    WUMPUS_MORTO: 4000,         // Recompensa por matar o Wumpus
+    OURO_COLETADO: 2000,        // Recompensa por coletar ouro
+    WUMPUS_MORTO: 2000,         // Recompensa por matar o Wumpus
     FLECHA_DISPARADA: -10,      // Penalidade por disparar uma flecha
-    FLECHA_ERRADA: -1000,        // Penalidade por errar o disparo
-    MORTE_WUMPUS: -2000,        // Penalidade por morrer para o Wumpus
-    MORTE_BURACO: -2000,        // Penalidade por morrer para um buraco
+    FLECHA_ERRADA: -500,        // Penalidade por errar o disparo
+    MORTE_WUMPUS: -1000,        // Penalidade por morrer para o Wumpus
+    MORTE_BURACO: -1000,        // Penalidade por morrer para um buraco
     VITORIA: 8000,              // Recompensa por vencer o jogo
-    FIM_PERIODO: -500            // Recompensa por terminar o período sem morrer
+    FIM_PERIODO: -250            // Recompensa por terminar o período sem morrer
 };
 
 class Sala {
@@ -420,9 +420,7 @@ function definirPercurso(mundo) {
     console.log(agente.individuos);
 }
 
-function selecaoPorTorneio(agente) {
-    let tamanhoTorneio = 5;
-
+function selecaoDeInidividuos(agente, tamanhoTorneio = 5) {
     let torneio = [];
     for (let i = 0; i < tamanhoTorneio; i++) {
         let indiceAleatorio = Math.floor(Math.random() * agente.individuos.length);
@@ -430,6 +428,7 @@ function selecaoPorTorneio(agente) {
     }
     return torneio.reduce((melhor, atual) => (atual.pontuacao > melhor.pontuacao ? atual : melhor));
 }
+
 
 function reproduzirEvoluir(mundo) {
     let agente = mundo.agente;
@@ -446,7 +445,7 @@ function reproduzirEvoluir(mundo) {
     //esses 3 somados com o melhor, irão para a reprodução
     const individuosSelecionados = [melhorIndividuo];
     for (let i = 0; i < 3; i++) {
-        const individuo = selecaoPorTorneio(agente);
+        const individuo = selecaoDeInidividuos(agente);
         const index = agente.individuos.indexOf(individuo);
         agente.individuos.splice(index, 1);
         individuosSelecionados.push(individuo);
@@ -471,7 +470,9 @@ function reproduzirEvoluir(mundo) {
         const descendente = new Individuo(percurso, 0, disparos);
 
         // Taxa de mutação dinâmica baseada no desempenho do melhor indivíduo
-        const taxaMutacao = 0.1 + (0.2 * (1 - (melhorIndividuo.pontuacao / Pontuacoes.VITORIA)));
+        const taxaMutacaoBase = 0.1 + (0.2 * (1 - (melhorIndividuo.pontuacao / Pontuacoes.VITORIA)));
+        const taxaMutacao = Math.max(0.1, taxaMutacaoBase); // Nunca deixa a mutação abaixo de 0.1
+
 
         //taxa de mutação estática
         // const taxaMutacao = 0.5;
@@ -488,8 +489,9 @@ function reproduzirEvoluir(mundo) {
 }
 
 function mutarIndividuo(individuo, mundo, taxaMutacao) {
-    const TAMANHO_MAXIMO_PERcurso = d * 10; // Defina um tamanho máximo
-    // Mutação do percurso
+    const TAMANHO_MAXIMO_PERcurso = d * 1000; // Defina um tamanho máximo
+
+    // Mutação do percurso existente
     for (let i = 0; i < individuo.percurso.length; i++) {
         if (Math.random() < taxaMutacao) {
             const movimentos = [
@@ -500,6 +502,17 @@ function mutarIndividuo(individuo, mundo, taxaMutacao) {
             ];
             individuo.percurso[i] = movimentos[Math.floor(Math.random() * movimentos.length)];
         }
+    }
+
+    // Adicionando d movimentos aleatórios ao percurso
+    for (let i = 0; i < d; i++) {
+        const movimentos = [
+            mundo.agente.moverNorte.bind(mundo.agente),
+            mundo.agente.moverSul.bind(mundo.agente),
+            mundo.agente.moverLeste.bind(mundo.agente),
+            mundo.agente.moverOeste.bind(mundo.agente)
+        ];
+        individuo.percurso.push(movimentos[Math.floor(Math.random() * movimentos.length)]);
     }
 
     // Limitar o tamanho do percurso
@@ -520,6 +533,7 @@ function mutarIndividuo(individuo, mundo, taxaMutacao) {
         }
     }
 }
+
 
 function misturarVetores(vetor1, vetor2) {
     const novoVetor = [];
