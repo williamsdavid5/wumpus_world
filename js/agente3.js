@@ -37,6 +37,7 @@ class Individuo {
         this.i = 0; //indice do percurso
         this.j = 0 //indice dos disparos
         this.pontuacao = pontuacao;
+        this.venceu = false;
     }
 }
 
@@ -471,6 +472,9 @@ function reproduzirEvoluir(mundo) {
 
         // Taxa de mutação dinâmica baseada no desempenho do melhor indivíduo
         const taxaMutacao = 0.1 + (0.2 * (1 - (melhorIndividuo.pontuacao / Pontuacoes.VITORIA)));
+
+        //taxa de mutação estática
+        // const taxaMutacao = 0.5;
         mutarIndividuo(descendente, mundo, taxaMutacao);
 
         individuos.push(descendente);
@@ -484,6 +488,8 @@ function reproduzirEvoluir(mundo) {
 }
 
 function mutarIndividuo(individuo, mundo, taxaMutacao) {
+    const TAMANHO_MAXIMO_PERcurso = d * 10; // Defina um tamanho máximo
+    // Mutação do percurso
     for (let i = 0; i < individuo.percurso.length; i++) {
         if (Math.random() < taxaMutacao) {
             const movimentos = [
@@ -496,6 +502,12 @@ function mutarIndividuo(individuo, mundo, taxaMutacao) {
         }
     }
 
+    // Limitar o tamanho do percurso
+    if (individuo.percurso.length > TAMANHO_MAXIMO_PERcurso) {
+        individuo.percurso = individuo.percurso.slice(0, TAMANHO_MAXIMO_PERcurso);
+    }
+
+    // Mutação dos disparos
     for (let i = 0; i < individuo.disparos.length; i++) {
         if (Math.random() < taxaMutacao) {
             const direcoesDisparo = [
@@ -506,19 +518,6 @@ function mutarIndividuo(individuo, mundo, taxaMutacao) {
             ];
             individuo.disparos[i] = direcoesDisparo[Math.floor(Math.random() * direcoesDisparo.length)];
         }
-    }
-
-    const movimentosExtras = Math.floor(Math.random() * (mundo.mundo.length / 2)); // d/2 movimentos extras
-    const movimentos = [
-        mundo.agente.moverNorte.bind(mundo.agente),
-        mundo.agente.moverSul.bind(mundo.agente),
-        mundo.agente.moverLeste.bind(mundo.agente),
-        mundo.agente.moverOeste.bind(mundo.agente)
-    ];
-
-    for (let i = 0; i < movimentosExtras; i++) {
-        const movimentoAleatorio = movimentos[Math.floor(Math.random() * movimentos.length)];
-        individuo.percurso.push(movimentoAleatorio);
     }
 }
 
@@ -714,6 +713,7 @@ function rodarGame(mundo) {
 
         //quando o agente é morto e seu percurso nao acabou, o game ja encerra alterando o indice do agente testado
         individuo.pontuacao = agente.pontuacao;
+        individuo.venceu = true;
         individuo.i = 0;
         document.getElementById("logPontuacao").value = "Agente " + agente.individuoAtual + ": " + individuo.pontuacao + ", VITÓRIA !!!!!!!!!!!!!!!!!" + "\n" + document.getElementById("logPontuacao").value;
         agente.individuoAtual += 1;

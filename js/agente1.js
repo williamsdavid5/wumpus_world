@@ -593,7 +593,7 @@ document.getElementById("velocidadeLink").addEventListener("click", () => {
         internal = null;
 
         internal = setInterval(() => {
-            rodarGame(mundo);
+            rodarGameAleatorio(mundo);
         }, velocidades[indiceVelocidade]);
 
         document.getElementById("velocidadeLink").textContent = (velocidades[indiceVelocidade] / 1000).toFixed(1);
@@ -653,7 +653,7 @@ switch (mundoSelecionado) {
 
 }
 
-let velocidades = [2000, 1500, 1000, 500, 100];
+let velocidades = [2000, 1500, 1000, 500, 100, 1];
 let indiceVelocidade = 2;
 document.getElementById("velocidadeLink").textContent = (velocidades[indiceVelocidade] / 1000).toFixed(1);
 
