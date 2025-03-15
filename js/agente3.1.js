@@ -480,6 +480,7 @@ function reproduzirEvoluir(mundo) {
 
     agente.individuos = individuos;
 
+    geracoes += 1;
     console.log("nova geração");
     console.log(agente.individuos);
 }
@@ -571,7 +572,6 @@ function rodarGame(mundo) {
     individuo.i += 1; //após o passo, soma o indice
 
     agente.pontuacao -= Pontuacoes.MOVIMENTO_VALIDO;
-    document.getElementById("pontuacao").textContent = agente.pontuacao;
     // console.log(agente.x, agente.y);
 
     // morreu para wumpus
@@ -590,15 +590,6 @@ function rodarGame(mundo) {
             individuo.pontuacao = agente.pontuacao;
             individuo.i = 0;
             document.getElementById("logPontuacao").value = "Agente " + agente.individuoAtual + ": " + individuo.pontuacao + ", morto por wumpus" + "\n" + document.getElementById("logPontuacao").value;
-            agente.individuoAtual += 1;
-
-            if (agente.individuoAtual == agente.individuos.length) {
-                reproduzirEvoluir(mundo);
-                agente.individuoAtual = 0;
-                document.getElementById("logPontuacao").value = "-- GERAÇÃO " + mundo.contadorExecucoes + " --\n" + document.getElementById("logPontuacao").value;
-                mundo.contadorExecucoes += 1;
-            }
-
 
             agente.pontuacao = 0;
             document.getElementById("mortesPontuacao").textContent = agente.mortes;
@@ -623,15 +614,6 @@ function rodarGame(mundo) {
         individuo.pontuacao = agente.pontuacao;
         individuo.i = 0;
         document.getElementById("logPontuacao").value = "Agente " + agente.individuoAtual + ": " + individuo.pontuacao + ", morto por buraco" + "\n" + document.getElementById("logPontuacao").value;
-        agente.individuoAtual += 1;
-
-        if (agente.individuoAtual == agente.individuos.length) {
-            reproduzirEvoluir(mundo);
-            agente.individuoAtual = 0;
-            document.getElementById("logPontuacao").value = "-- GERAÇÃO " + mundo.contadorExecucoes + " --\n" + document.getElementById("logPontuacao").value;
-            mundo.contadorExecucoes += 1;
-        }
-
 
         agente.pontuacao = 0;
         document.getElementById("mortesPontuacao").textContent = agente.mortes;
@@ -695,15 +677,6 @@ function rodarGame(mundo) {
         individuo.venceu = true;
         individuo.i = 0;
         document.getElementById("logPontuacao").value = "Agente " + agente.individuoAtual + ": " + individuo.pontuacao + ", VITÓRIA !!!!!!!!!!!!!!!!!" + "\n" + document.getElementById("logPontuacao").value;
-        agente.individuoAtual += 1;
-
-        if (agente.individuoAtual == agente.individuos.length) {
-            reproduzirEvoluir(mundo);
-            agente.individuoAtual = 0;
-            document.getElementById("logPontuacao").value = "-- GERAÇÃO " + mundo.contadorExecucoes + " --\n" + document.getElementById("logPontuacao").value;
-            mundo.contadorExecucoes += 1;
-        }
-
 
         agente.pontuacao = 0;
         document.getElementById("Ouro Coletado").textContent = "Azedinhas coletadas: " + mundo.ouroColetado;
@@ -722,30 +695,150 @@ function rodarGame(mundo) {
     if (individuo.i == individuo.percurso.length) {
         //zera o indice do agente atual, atribui a pontuação, zera a pontuação do agente e altera o indice
         individuo.i = 0;
-        agente.pontuacao += Pontuacoes.FIM_PERIODO;
-        individuo.pontuacao = agente.pontuacao;
         agente.pontuacao = 0;
-
-        //nao terminar é consierado morte
-        agente.mortes += 1;
-        document.getElementById("mortesPontuacao").textContent = agente.mortes;
 
         agente.x = agente.y = 0;
         restaurarMundo(mundo, posicoesOuro, posicoesWumpus);
         agente.flechas = mundo.wumpus;
         agente.ouro = 0;
 
-        document.getElementById("logPontuacao").value = "Agente " + agente.individuoAtual + ": " + individuo.pontuacao + ", fim do percurso" + "\n" + document.getElementById("logPontuacao").value;
-        agente.individuoAtual += 1;
+    }
+}
 
+function resetarMundo(mundo, posicoesOuro, posicoesWumpus) {
+    posicoesOuro.forEach(([x, y]) => {
+        mundo.mundo[x][y].ouro = true;
+    });
+
+    if (posicoesWumpus) {
+        posicoesWumpus.forEach(([x, y]) => {
+            mundo.mundo[x][y].wumpus.vivo = true;
+        });
     }
 
-    // caso o indice passe, ele volta
-    if (agente.individuoAtual == agente.individuos.length) {
-        // console.log(agente.individuos);
+    posicoesWumpus.length = 0;
+    posicoesOuro.length = 0;
+}
+
+
+function rodarGameBack(mundo) {
+    let agente = mundo.agente;
+    let posicoesOuro = mundo.posicoesOuro;
+    let ouro = mundo.ouro;
+    let posicoesWumpus = mundo.posicoesWumpus;
+
+    let individuo = agente.individuos[agente.individuoAtual];
+    individuo.percurso[individuo.i]();
+    individuo.i += 1;
+
+    agente.pontuacao -= Pontuacoes.MOVIMENTO_VALIDO;
+
+    // Morreu para Wumpus
+    if (mundo.mundo[agente.x][agente.y].wumpus?.vivo) {
+        agente.x = agente.y = 0;
+        agente.mortes += 1;
+        agente.ouro = 0;
+        agente.pontuacao += Pontuacoes.MORTE_WUMPUS;
+
+        agente.flechas = mundo.wumpus;
+        mundo.mortesPorWumpus += 1;
+        resetarMundo(mundo, posicoesOuro, posicoesWumpus);
+
+        // Atribui a pontuação ao indivíduo e reinicializa a pontuação do agente
+        individuo.pontuacao = agente.pontuacao;
+        individuo.i = 0;
+        document.getElementById("logPontuacao").value = `Agente ${agente.individuoAtual}: ${individuo.pontuacao}, morto por wumpus\n` + document.getElementById("logPontuacao").value;
+
+        agente.pontuacao = 0; // Reinicializa a pontuação do agente
+        agente.individuoAtual += 1;
+    }
+
+    // Morreu para buraco
+    if (mundo.mundo[agente.x][agente.y].buraco) {
+        agente.x = agente.y = 0;
+        agente.mortes += 1;
+        agente.pontuacao += Pontuacoes.MORTE_BURACO;
+
+        agente.ouro = 0;
+        agente.flechas = mundo.wumpus;
+        mundo.mortesPorBuraco += 1;
+        resetarMundo(mundo, posicoesOuro, posicoesWumpus);
+
+        // Atribui a pontuação ao indivíduo e reinicializa a pontuação do agente
+        individuo.pontuacao = agente.pontuacao;
+        individuo.i = 0;
+        document.getElementById("logPontuacao").value = `Agente ${agente.individuoAtual}: ${individuo.pontuacao}, morto por buraco\n` + document.getElementById("logPontuacao").value;
+
+        agente.pontuacao = 0; // Reinicializa a pontuação do agente
+        agente.individuoAtual += 1;
+    }
+
+    // Achou ouro
+    if (mundo.mundo[agente.x][agente.y].ouro) {
+        posicoesOuro.push([agente.x, agente.y]);
+        mundo.mundo[agente.x][agente.y].ouro = false;
+        agente.ouro += 1;
+        agente.pontuacao += Pontuacoes.OURO_COLETADO;
+    }
+
+    // Sentiu fedor e disparou
+    if (mundo.mundo[agente.x][agente.y].fedor && agente.flechas > 0) {
+        agente.pontuacao += Pontuacoes.FLECHA_DISPARADA;
+        mundo.flechasDisparadas += 1;
+        let morreu = individuo.disparos[individuo.j]();
+        individuo.j = (individuo.j + 1) % individuo.disparos.length;
+
+        if (morreu[0]) {
+            agente.pontuacao += Pontuacoes.WUMPUS_MORTO;
+            posicoesWumpus.push([morreu[1], morreu[2]]);
+            mundo.wumpusMortos += 1;
+        } else {
+            agente.pontuacao += Pontuacoes.FLECHA_ERRADA;
+        }
+    }
+
+    // Chegou em 0,0 com ouro
+    if (agente.x === 0 && agente.y === 0 && agente.ouro === ouro) {
+        agente.vitorias += 1;
+        agente.pontuacao += Pontuacoes.VITORIA;
+        agente.ouro = 0;
+
+        agente.flechas = mundo.wumpus;
+        mundo.ouroColetado += 1;
+        resetarMundo(mundo, posicoesOuro, posicoesWumpus);
+
+        // Atribui a pontuação ao indivíduo e reinicializa a pontuação do agente
+        individuo.pontuacao = agente.pontuacao;
+        individuo.venceu = true;
+        individuo.i = 0;
+        document.getElementById("logPontuacao").value = `Agente ${agente.individuoAtual}: ${individuo.pontuacao}, VITÓRIA !!!!!!!!!!!!!!!!!\n` + document.getElementById("logPontuacao").value;
+
+        agente.pontuacao = 0; // Reinicializa a pontuação do agente
+        agente.individuoAtual += 1;
+    }
+
+    // Fim do percurso
+    if (individuo.i === individuo.percurso.length) {
+        individuo.i = 0;
+        agente.pontuacao += Pontuacoes.FIM_PERIODO; // Aplica a penalidade de fim de período
+        individuo.pontuacao = agente.pontuacao; // Atribui a pontuação ao indivíduo
+        agente.pontuacao = 0; // Reinicializa a pontuação do agente
+
+        agente.mortes += 1;
+        agente.x = agente.y = 0;
+        resetarMundo(mundo, posicoesOuro, posicoesWumpus);
+        agente.flechas = mundo.wumpus;
+        agente.ouro = 0;
+
+        document.getElementById("logPontuacao").value = `Agente ${agente.individuoAtual}: ${individuo.pontuacao}, fim do percurso\n` + document.getElementById("logPontuacao").value;
+        agente.individuoAtual += 1;
+    }
+
+    // Verifica se todos os indivíduos foram avaliados
+    if (agente.individuoAtual === agente.individuos.length) {
         reproduzirEvoluir(mundo);
         agente.individuoAtual = 0;
-        document.getElementById("logPontuacao").value = "-- GERAÇÃO " + mundo.contadorExecucoes + " --\n" + document.getElementById("logPontuacao").value;
+        document.getElementById("logPontuacao").value = `-- GERAÇÃO ${mundo.contadorExecucoes} --\n` + document.getElementById("logPontuacao").value;
         mundo.contadorExecucoes += 1;
     }
 }
@@ -824,6 +917,7 @@ function carregarMundoPredefinido(nomeArquivo) {
             definirPercurso(mundo);
             console.log(mundo);
             console.log(`Mundo "${nomeArquivo}" carregado com sucesso!`);
+            iniciarGame();
         })
         .catch(error => {
             console.error("Erro ao carregar o mundo:", error);
@@ -896,6 +990,36 @@ document.getElementById("inputTamanhoSala").addEventListener("change", () => {
     console.log("Tamanho das salas atualizado para:", mapaTamanhoPixels);
 });
 
+let geracoes = 0;
+let internal;
+let rodando;
+
+function iniciarGame() {
+    while (geracoes < 100) {
+        rodarGameBack(mundo);
+    }
+
+    let agente = mundo.agente;
+
+    let melhorIndividuo = agente.individuos[0];
+
+    for (let i = 1; i < agente.individuos.length; i++) {
+        if (agente.individuos[i].pontuacao > melhorIndividuo.pontuacao) {
+            melhorIndividuo = agente.individuos[i];
+        }
+    }
+
+    melhorIndividuo.pontuacao = 0;
+
+    agente.individuos = [melhorIndividuo];
+    agente.individuoAtual = 0;
+
+    internal = setInterval(() => {
+        rodarGame(mundo);
+    }, velocidades[indiceVelocidade]);
+    rodando = true;
+}
+
 document.getElementById("fieldMapaImaginario").remove();
 document.getElementById("usarReencarnacaoLabel").remove();
 document.getElementById("usarReencarnacao").remove();
@@ -906,6 +1030,7 @@ let mundo;
 
 //para verificar se o agente escolheu um dos mundos predefinidos
 let mundoSelecionado = localStorage.getItem("mundoSelecionado");
+
 switch (mundoSelecionado) {
     case "aleatorio":
         mundo = new Mundo(d);
@@ -916,10 +1041,11 @@ switch (mundoSelecionado) {
         console.log("Mundo inicial mantido.");
         document.getElementById("botaoSalvarMundo").style.display = "block";
         document.getElementById("botaoImportarMundo").style.display = "block";
-
+        iniciarGame();
         break;
     default:
         carregarMundoPredefinido(mundoSelecionado);
+
         break;
 
 }
@@ -927,8 +1053,3 @@ switch (mundoSelecionado) {
 let velocidades = [2000, 1500, 1000, 500, 100, 1];
 let indiceVelocidade = 2;
 document.getElementById("velocidadeLink").textContent = (velocidades[indiceVelocidade] / 1000).toFixed(1);
-
-let internal = setInterval(() => {
-    rodarGame(mundo);
-}, velocidades[indiceVelocidade]);
-let rodando = true;
