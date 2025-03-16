@@ -1,3 +1,8 @@
+const ValoresGeracao = {
+    POPULACAO: 100,
+    QTDGERACOES: 30
+}
+
 const Pontuacoes = {
     MOVIMENTO_INVALIDO: -2000, // Penalidade por movimento inválido
     MOVIMENTO_VALIDO: -100,       // Penalidade por movimento válido
@@ -392,7 +397,7 @@ function definirPercurso(mundo) {
     ];
 
     let individuos = [];
-    for (let j = 0; j < 10; j++) {
+    for (let j = 0; j < ValoresGeracao.POPULACAO; j++) {
         let percurso = [];
         let tamanhoPercurso = Math.floor(Math.random() * (d * 2)) + d * 2;
 
@@ -451,7 +456,7 @@ function reproduzirEvoluir(mundo) {
     //isso é elitismo!
 
     // Gera 9 descendentes a partir de combinações entre os 4 indivíduos selecionados
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < ValoresGeracao.POPULACAO - 1; i++) {
         let individuo1 = individuosSelecionados[Math.floor(Math.random() * individuosSelecionados.length)];
         let individuo2;
 
@@ -566,15 +571,15 @@ function rodarGame(mundo) {
     let ouro = mundo.ouro;
     let posicoesWumpus = mundo.posicoesWumpus;
 
-    let individuo = agente.individuos[agente.individuoAtual]; //resgata o individuo usado atualmente
-    console.log("individuo: ", agente.individuoAtual, "passo: ", agente.individuos[agente.individuoAtual].i)
-    individuo.percurso[individuo.i](); //acessando o passo atual do individuo no seu percurso
-    individuo.i += 1; //após o passo, soma o indice
+    let individuo = agente.individuos[agente.individuoAtual]; // Resgata o indivíduo usado atualmente
+    console.log("individuo: ", agente.individuoAtual, "passo: ", agente.individuos[agente.individuoAtual].i);
+    individuo.percurso[individuo.i](); // Acessa o passo atual do indivíduo no seu percurso
+    individuo.i += 1; // Após o passo, soma o índice
 
-    agente.pontuacao -= Pontuacoes.MOVIMENTO_VALIDO;
-    // console.log(agente.x, agente.y);
+    agente.pontuacao += Pontuacoes.MOVIMENTO_VALIDO; // Corrigido: decrementa a pontuação
+    document.getElementById("pontuacao").textContent = agente.pontuacao; // Atualiza a pontuação na tela
 
-    // morreu para wumpus
+    // Morreu para Wumpus
     if (mundo.mundo[agente.x][agente.y].wumpus) {
         if (mundo.mundo[agente.x][agente.y].wumpus.vivo) {
             agente.x = agente.y = 0;
@@ -583,23 +588,20 @@ function rodarGame(mundo) {
             agente.pontuacao += Pontuacoes.MORTE_WUMPUS;
 
             agente.flechas = mundo.wumpus;
-            mundo.mortesPorWumpus += 1;
             restaurarMundo(mundo, posicoesOuro, posicoesWumpus);
 
-            //quando o agente é morto e seu percurso nao acabou, o game ja encerra alterando o indice do agente testado
+            // Quando o agente é morto e seu percurso não acabou, o game já encerra alterando o índice do agente testado
             individuo.pontuacao = agente.pontuacao;
             individuo.i = 0;
             document.getElementById("logPontuacao").value = "Agente " + agente.individuoAtual + ": " + individuo.pontuacao + ", morto por wumpus" + "\n" + document.getElementById("logPontuacao").value;
 
-            agente.pontuacao = 0;
-            document.getElementById("mortesPontuacao").textContent = agente.mortes;
+            agente.pontuacao = 0; // Reinicializa a pontuação do agente
             document.getElementById("flechasNumero").textContent = agente.flechas;
-            document.getElementById("mortes por wumpus").textContent = "Mortes por wumpus: " + mundo.mortesPorWumpus;
-            document.getElementById("pontuacao").textContent = agente.pontuacao;
+            document.getElementById("pontuacao").textContent = agente.pontuacao; // Atualiza a pontuação na tela
         }
     }
 
-    // morreu para um buraco
+    // Morreu para um buraco
     if (mundo.mundo[agente.x][agente.y].buraco) {
         agente.x = agente.y = 0;
         agente.mortes += 1;
@@ -607,38 +609,34 @@ function rodarGame(mundo) {
 
         agente.ouro = 0;
         agente.flechas = mundo.wumpus;
-        mundo.mortesPorBuraco += 1;
         restaurarMundo(mundo, posicoesOuro, posicoesWumpus);
 
-        //quando o agente é morto e seu percurso nao acabou, o game ja encerra alterando o indice do agente testado
+        // Quando o agente é morto e seu percurso não acabou, o game já encerra alterando o índice do agente testado
         individuo.pontuacao = agente.pontuacao;
         individuo.i = 0;
         document.getElementById("logPontuacao").value = "Agente " + agente.individuoAtual + ": " + individuo.pontuacao + ", morto por buraco" + "\n" + document.getElementById("logPontuacao").value;
 
-        agente.pontuacao = 0;
-        document.getElementById("mortesPontuacao").textContent = agente.mortes;
+        agente.pontuacao = 0; // Reinicializa a pontuação do agente
         document.getElementById("flechasNumero").textContent = agente.flechas;
-        document.getElementById("mortes por buraco").textContent = "Mortes por buraco: " + mundo.mortesPorBuraco;
-        document.getElementById("pontuacao").textContent = agente.pontuacao
+        document.getElementById("pontuacao").textContent = agente.pontuacao; // Atualiza a pontuação na tela
     }
 
-    //achou ouro
+    // Achou ouro
     if (mundo.mundo[agente.x][agente.y].ouro) {
         posicoesOuro.push([agente.x, agente.y]);
         mundo.mundo[agente.x][agente.y].ouro = false;
         agente.ouro += 1;
         agente.pontuacao += Pontuacoes.OURO_COLETADO;
         document.getElementById(agente.x + "," + agente.y + "_ouroItem").remove();
-        document.getElementById("pontuacao").textContent = agente.pontuacao;
+        document.getElementById("pontuacao").textContent = agente.pontuacao; // Atualiza a pontuação na tela
     }
 
-    //sentiu fedor, disparou
+    // Sentiu fedor, disparou
     if (mundo.mundo[agente.x][agente.y].fedor && agente.flechas > 0) {
         agente.pontuacao += Pontuacoes.FLECHA_DISPARADA;
-        document.getElementById("pontuacao").textContent = agente.pontuacao;
-        mundo.flechasDisparadas += 1;
+        document.getElementById("pontuacao").textContent = agente.pontuacao; // Atualiza a pontuação na tela
 
-        //caso o agente sinta o fedor, ele usará os disparos de sua lista
+        // Caso o agente sinta o fedor, ele usará os disparos de sua lista
         let morreu = individuo.disparos[individuo.j]();
         individuo.j += 1;
 
@@ -647,42 +645,36 @@ function rodarGame(mundo) {
         }
 
         document.getElementById("flechasNumero").textContent = agente.flechas;
-        document.getElementById("Flechas disparadas").textContent = "Tiros disparados: " + mundo.flechasDisparadas;
 
         if (morreu[0]) {
-            // console.log(morreu[1], morreu[2]);
             agente.pontuacao += Pontuacoes.WUMPUS_MORTO;
             posicoesWumpus.push([morreu[1], morreu[2]]);
             document.getElementById(morreu[1] + "," + morreu[2] + "_wumpus").src = "textures/canvaWumpusMorto.png";
-            mundo.wumpusMortos += 1;
-            document.getElementById("Wumpus Mortos").textContent = "Canvas mortos: " + mundo.wumpusMortos;
         } else {
             agente.pontuacao += Pontuacoes.FLECHA_ERRADA;
         }
 
+        document.getElementById("pontuacao").textContent = agente.pontuacao; // Atualiza a pontuação na tela
     }
 
-    // chegou em 0,0 com ouro
+    // Chegou em 0,0 com ouro
     if (agente.x == 0 && agente.y == 0 && agente.ouro == ouro) {
         agente.vitorias += 1;
         agente.pontuacao += Pontuacoes.VITORIA;
         agente.ouro = 0;
 
         agente.flechas = mundo.wumpus;
-        mundo.ouroColetado += 1;
         restaurarMundo(mundo, posicoesOuro, posicoesWumpus);
 
-        //quando o agente é morto e seu percurso nao acabou, o game ja encerra alterando o indice do agente testado
+        // Quando o agente é morto e seu percurso não acabou, o game já encerra alterando o índice do agente testado
         individuo.pontuacao = agente.pontuacao;
         individuo.venceu = true;
         individuo.i = 0;
         document.getElementById("logPontuacao").value = "Agente " + agente.individuoAtual + ": " + individuo.pontuacao + ", VITÓRIA !!!!!!!!!!!!!!!!!" + "\n" + document.getElementById("logPontuacao").value;
 
-        agente.pontuacao = 0;
-        document.getElementById("Ouro Coletado").textContent = "Azedinhas coletadas: " + mundo.ouroColetado;
-        document.getElementById("vitoriasPontuacao").textContent = agente.vitorias;
+        agente.pontuacao = 0; // Reinicializa a pontuação do agente
         document.getElementById("flechasNumero").textContent = agente.flechas;
-        document.getElementById("pontuacao").textContent = agente.pontuacao;
+        document.getElementById("pontuacao").textContent = agente.pontuacao; // Atualiza a pontuação na tela
     }
 
     if (agente.flechas > 0) {
@@ -691,9 +683,9 @@ function rodarGame(mundo) {
         document.getElementById(agente.x + "," + agente.y).innerHTML += "<img src=\"textures/linoAgente.png\" id=\"agente\" alt=\"\">";
     }
 
-    //verifica se o percurso do agente ja acabou comparando o indice com a quantidade de movimentos
+    // Verifica se o percurso do agente já acabou comparando o índice com a quantidade de movimentos
     if (individuo.i == individuo.percurso.length) {
-        //zera o indice do agente atual, atribui a pontuação, zera a pontuação do agente e altera o indice
+        // Zera o índice do agente atual, atribui a pontuação, zera a pontuação do agente e altera o índice
         individuo.i = 0;
         agente.pontuacao = 0;
 
@@ -702,6 +694,7 @@ function rodarGame(mundo) {
         agente.flechas = mundo.wumpus;
         agente.ouro = 0;
 
+        document.getElementById("pontuacao").textContent = agente.pontuacao; // Atualiza a pontuação na tela
     }
 }
 
@@ -731,7 +724,9 @@ function rodarGameBack(mundo) {
     individuo.percurso[individuo.i]();
     individuo.i += 1;
 
-    agente.pontuacao -= Pontuacoes.MOVIMENTO_VALIDO;
+    agente.pontuacao += Pontuacoes.MOVIMENTO_VALIDO;
+
+    document.getElementById("pontuacao").textContent = agente.pontuacao; // Atualiza a pontuação na tela
 
     // Morreu para Wumpus
     if (mundo.mundo[agente.x][agente.y].wumpus?.vivo) {
@@ -739,6 +734,7 @@ function rodarGameBack(mundo) {
         agente.mortes += 1;
         agente.ouro = 0;
         agente.pontuacao += Pontuacoes.MORTE_WUMPUS;
+        document.getElementById("pontuacao").textContent = agente.pontuacao;
 
         agente.flechas = mundo.wumpus;
         mundo.mortesPorWumpus += 1;
@@ -751,6 +747,11 @@ function rodarGameBack(mundo) {
 
         agente.pontuacao = 0; // Reinicializa a pontuação do agente
         agente.individuoAtual += 1;
+
+        // Atualiza as estatísticas na tela
+        document.getElementById("mortesPontuacao").textContent = agente.mortes;
+        document.getElementById("flechasNumero").textContent = agente.flechas;
+        document.getElementById("mortes por wumpus").textContent = "Mortes por wumpus: " + mundo.mortesPorWumpus;
     }
 
     // Morreu para buraco
@@ -758,6 +759,7 @@ function rodarGameBack(mundo) {
         agente.x = agente.y = 0;
         agente.mortes += 1;
         agente.pontuacao += Pontuacoes.MORTE_BURACO;
+        document.getElementById("pontuacao").textContent = agente.pontuacao;
 
         agente.ouro = 0;
         agente.flechas = mundo.wumpus;
@@ -771,6 +773,11 @@ function rodarGameBack(mundo) {
 
         agente.pontuacao = 0; // Reinicializa a pontuação do agente
         agente.individuoAtual += 1;
+
+        // Atualiza as estatísticas na tela
+        document.getElementById("mortesPontuacao").textContent = agente.mortes;
+        document.getElementById("flechasNumero").textContent = agente.flechas;
+        document.getElementById("mortes por buraco").textContent = "Mortes por buraco: " + mundo.mortesPorBuraco;
     }
 
     // Achou ouro
@@ -779,28 +786,42 @@ function rodarGameBack(mundo) {
         mundo.mundo[agente.x][agente.y].ouro = false;
         agente.ouro += 1;
         agente.pontuacao += Pontuacoes.OURO_COLETADO;
+        document.getElementById("pontuacao").textContent = agente.pontuacao;
+
+        // Atualiza as estatísticas na tela
+        document.getElementById("Ouro Coletado").textContent = "Azedinhas coletadas: " + mundo.ouroColetado;
+        document.getElementById("pontuacao").textContent = agente.pontuacao;
     }
 
     // Sentiu fedor e disparou
     if (mundo.mundo[agente.x][agente.y].fedor && agente.flechas > 0) {
         agente.pontuacao += Pontuacoes.FLECHA_DISPARADA;
+        document.getElementById("pontuacao").textContent = agente.pontuacao;
         mundo.flechasDisparadas += 1;
         let morreu = individuo.disparos[individuo.j]();
         individuo.j = (individuo.j + 1) % individuo.disparos.length;
 
         if (morreu[0]) {
             agente.pontuacao += Pontuacoes.WUMPUS_MORTO;
+            document.getElementById("pontuacao").textContent = agente.pontuacao;
             posicoesWumpus.push([morreu[1], morreu[2]]);
             mundo.wumpusMortos += 1;
+            document.getElementById("Wumpus Mortos").textContent = "Canvas mortos: " + mundo.wumpusMortos;
         } else {
             agente.pontuacao += Pontuacoes.FLECHA_ERRADA;
+            document.getElementById("pontuacao").textContent = agente.pontuacao;
         }
+
+        // Atualiza as estatísticas na tela
+        document.getElementById("flechasNumero").textContent = agente.flechas;
+        document.getElementById("Flechas disparadas").textContent = "Tiros disparados: " + mundo.flechasDisparadas;
     }
 
     // Chegou em 0,0 com ouro
     if (agente.x === 0 && agente.y === 0 && agente.ouro === ouro) {
         agente.vitorias += 1;
         agente.pontuacao += Pontuacoes.VITORIA;
+        document.getElementById("pontuacao").textContent = agente.pontuacao;
         agente.ouro = 0;
 
         agente.flechas = mundo.wumpus;
@@ -815,12 +836,18 @@ function rodarGameBack(mundo) {
 
         agente.pontuacao = 0; // Reinicializa a pontuação do agente
         agente.individuoAtual += 1;
+
+        // Atualiza as estatísticas na tela
+        document.getElementById("Ouro Coletado").textContent = "Azedinhas coletadas: " + mundo.ouroColetado;
+        document.getElementById("vitoriasPontuacao").textContent = agente.vitorias;
+        document.getElementById("flechasNumero").textContent = agente.flechas;
     }
 
     // Fim do percurso
     if (individuo.i === individuo.percurso.length) {
         individuo.i = 0;
         agente.pontuacao += Pontuacoes.FIM_PERIODO; // Aplica a penalidade de fim de período
+        document.getElementById("pontuacao").textContent = agente.pontuacao;
         individuo.pontuacao = agente.pontuacao; // Atribui a pontuação ao indivíduo
         agente.pontuacao = 0; // Reinicializa a pontuação do agente
 
@@ -832,6 +859,10 @@ function rodarGameBack(mundo) {
 
         document.getElementById("logPontuacao").value = `Agente ${agente.individuoAtual}: ${individuo.pontuacao}, fim do percurso\n` + document.getElementById("logPontuacao").value;
         agente.individuoAtual += 1;
+
+        // Atualiza as estatísticas na tela
+        document.getElementById("mortesPontuacao").textContent = agente.mortes;
+        document.getElementById("flechasNumero").textContent = agente.flechas;
     }
 
     // Verifica se todos os indivíduos foram avaliados
@@ -995,7 +1026,7 @@ let internal;
 let rodando;
 
 function iniciarGame() {
-    while (geracoes < 100) {
+    while (geracoes < ValoresGeracao.QTDGERACOES) {
         rodarGameBack(mundo);
     }
 
@@ -1019,6 +1050,10 @@ function iniciarGame() {
     }, velocidades[indiceVelocidade]);
     rodando = true;
 }
+
+let velocidades = [2000, 1500, 1000, 500, 100, 1];
+let indiceVelocidade = 2;
+document.getElementById("velocidadeLink").textContent = (velocidades[indiceVelocidade] / 1000).toFixed(1);
 
 document.getElementById("fieldMapaImaginario").remove();
 document.getElementById("usarReencarnacaoLabel").remove();
@@ -1049,7 +1084,3 @@ switch (mundoSelecionado) {
         break;
 
 }
-
-let velocidades = [2000, 1500, 1000, 500, 100, 1];
-let indiceVelocidade = 2;
-document.getElementById("velocidadeLink").textContent = (velocidades[indiceVelocidade] / 1000).toFixed(1);

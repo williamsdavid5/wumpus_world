@@ -570,7 +570,7 @@ function rodarGame(mundo) {
     individuo.percurso[individuo.i](); //acessando o passo atual do individuo no seu percurso
     individuo.i += 1; //após o passo, soma o indice
 
-    agente.pontuacao -= Pontuacoes.MOVIMENTO_VALIDO;
+    agente.pontuacao += Pontuacoes.MOVIMENTO_VALIDO;
     document.getElementById("pontuacao").textContent = agente.pontuacao;
     // console.log(agente.x, agente.y);
 
