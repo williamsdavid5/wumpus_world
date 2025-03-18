@@ -5,11 +5,11 @@ const ValoresGeracao = {
 
 const Pontuacoes = {
     MOVIMENTO_INVALIDO: -2000, // Penalidade por movimento inválido
-    MOVIMENTO_VALIDO: -100,       // Penalidade por movimento válido
+    MOVIMENTO_VALIDO: -500,       // Penalidade por movimento válido
     OURO_COLETADO: 2000,        // Recompensa por coletar ouro
     WUMPUS_MORTO: 2000,         // Recompensa por matar o Wumpus
-    FLECHA_DISPARADA: -10,      // Penalidade por disparar uma flecha
-    FLECHA_ERRADA: -500,        // Penalidade por errar o disparo
+    FLECHA_DISPARADA: -50,      // Penalidade por disparar uma flecha
+    FLECHA_ERRADA: -1000,        // Penalidade por errar o disparo
     MORTE_WUMPUS: -1000,        // Penalidade por morrer para o Wumpus
     MORTE_BURACO: -1000,        // Penalidade por morrer para um buraco
     VITORIA: 8000,              // Recompensa por vencer o jogo
@@ -491,7 +491,7 @@ function reproduzirEvoluir(mundo) {
 }
 
 function mutarIndividuo(individuo, mundo, taxaMutacao) {
-    const TAMANHO_MAXIMO_PERcurso = d * 1000; // Defina um tamanho máximo
+    const TAMANHO_MAXIMO_PERcurso = d * 10; // Defina um tamanho máximo
 
     // Mutação do percurso existente
     for (let i = 0; i < individuo.percurso.length; i++) {
@@ -728,25 +728,14 @@ function rodarGameBack(mundo) {
 
     document.getElementById("pontuacao").textContent = agente.pontuacao; // Atualiza a pontuação na tela
 
-    // Morreu para Wumpus
+    // encontrou wumpus
     if (mundo.mundo[agente.x][agente.y].wumpus?.vivo) {
-        agente.x = agente.y = 0;
         agente.mortes += 1;
-        agente.ouro = 0;
         agente.pontuacao += Pontuacoes.MORTE_WUMPUS;
         document.getElementById("pontuacao").textContent = agente.pontuacao;
 
-        agente.flechas = mundo.wumpus;
         mundo.mortesPorWumpus += 1;
-        resetarMundo(mundo, posicoesOuro, posicoesWumpus);
 
-        // Atribui a pontuação ao indivíduo e reinicializa a pontuação do agente
-        individuo.pontuacao = agente.pontuacao;
-        individuo.i = 0;
-        document.getElementById("logPontuacao").value = `Agente ${agente.individuoAtual}: ${individuo.pontuacao}, morto por wumpus\n` + document.getElementById("logPontuacao").value;
-
-        agente.pontuacao = 0; // Reinicializa a pontuação do agente
-        agente.individuoAtual += 1;
 
         // Atualiza as estatísticas na tela
         document.getElementById("mortesPontuacao").textContent = agente.mortes;
@@ -756,23 +745,9 @@ function rodarGameBack(mundo) {
 
     // Morreu para buraco
     if (mundo.mundo[agente.x][agente.y].buraco) {
-        agente.x = agente.y = 0;
         agente.mortes += 1;
         agente.pontuacao += Pontuacoes.MORTE_BURACO;
         document.getElementById("pontuacao").textContent = agente.pontuacao;
-
-        agente.ouro = 0;
-        agente.flechas = mundo.wumpus;
-        mundo.mortesPorBuraco += 1;
-        resetarMundo(mundo, posicoesOuro, posicoesWumpus);
-
-        // Atribui a pontuação ao indivíduo e reinicializa a pontuação do agente
-        individuo.pontuacao = agente.pontuacao;
-        individuo.i = 0;
-        document.getElementById("logPontuacao").value = `Agente ${agente.individuoAtual}: ${individuo.pontuacao}, morto por buraco\n` + document.getElementById("logPontuacao").value;
-
-        agente.pontuacao = 0; // Reinicializa a pontuação do agente
-        agente.individuoAtual += 1;
 
         // Atualiza as estatísticas na tela
         document.getElementById("mortesPontuacao").textContent = agente.mortes;
@@ -1026,30 +1001,36 @@ let internal;
 let rodando;
 
 function iniciarGame() {
-    while (geracoes < ValoresGeracao.QTDGERACOES) {
-        rodarGameBack(mundo);
-    }
+    document.getElementById("telaCarregamento").style.display = "flex";
 
-    let agente = mundo.agente;
-
-    let melhorIndividuo = agente.individuos[0];
-
-    for (let i = 1; i < agente.individuos.length; i++) {
-        if (agente.individuos[i].pontuacao > melhorIndividuo.pontuacao) {
-            melhorIndividuo = agente.individuos[i];
+    // Permite que a interface atualize antes de começar a evolução
+    setTimeout(() => {
+        while (geracoes < ValoresGeracao.QTDGERACOES) {
+            rodarGameBack(mundo);
         }
-    }
 
-    melhorIndividuo.pontuacao = 0;
+        let agente = mundo.agente;
+        let melhorIndividuo = agente.individuos[0];
 
-    agente.individuos = [melhorIndividuo];
-    agente.individuoAtual = 0;
+        for (let i = 1; i < agente.individuos.length; i++) {
+            if (agente.individuos[i].pontuacao > melhorIndividuo.pontuacao) {
+                melhorIndividuo = agente.individuos[i];
+            }
+        }
 
-    internal = setInterval(() => {
-        rodarGame(mundo);
-    }, velocidades[indiceVelocidade]);
-    rodando = true;
+        melhorIndividuo.pontuacao = 0;
+        agente.individuos = [melhorIndividuo];
+        agente.individuoAtual = 0;
+
+        internal = setInterval(() => {
+            rodarGame(mundo);
+        }, velocidades[indiceVelocidade]);
+        rodando = true;
+
+        document.getElementById("telaCarregamento").style.display = "none";
+    }, 100); // Pequeno atraso para garantir que a interface atualize
 }
+
 
 let velocidades = [2000, 1500, 1000, 500, 100, 1];
 let indiceVelocidade = 2;
