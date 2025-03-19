@@ -1,19 +1,19 @@
 const ValoresGeracao = {
-    POPULACAO: 100,
-    QTDGERACOES: 30
+    POPULACAO: 50,
+    QTDGERACOES: 1000
 }
 
 const Pontuacoes = {
-    MOVIMENTO_INVALIDO: -2000, // Penalidade por movimento inválido
-    MOVIMENTO_VALIDO: -500,       // Penalidade por movimento válido
-    OURO_COLETADO: 2000,        // Recompensa por coletar ouro
-    WUMPUS_MORTO: 2000,         // Recompensa por matar o Wumpus
-    FLECHA_DISPARADA: -50,      // Penalidade por disparar uma flecha
-    FLECHA_ERRADA: -1000,        // Penalidade por errar o disparo
-    MORTE_WUMPUS: -1000,        // Penalidade por morrer para o Wumpus
-    MORTE_BURACO: -1000,        // Penalidade por morrer para um buraco
-    VITORIA: 8000,              // Recompensa por vencer o jogo
-    FIM_PERIODO: -250            // Recompensa por terminar o período sem morrer
+    MOVIMENTO_INVALIDO: -500, // Penalidade por movimento inválido
+    MOVIMENTO_VALIDO: -50,       // Penalidade por movimento válido
+    OURO_COLETADO: 5000,        // Recompensa por coletar ouro
+    WUMPUS_MORTO: 3000,         // Recompensa por matar o Wumpus
+    FLECHA_DISPARADA: -100,      // Penalidade por disparar uma flecha
+    FLECHA_ERRADA: -2000,        // Penalidade por errar o disparo
+    MORTE_WUMPUS: -5000,        // Penalidade por morrer para o Wumpus
+    MORTE_BURACO: -5000,        // Penalidade por morrer para um buraco
+    VITORIA: 20000,              // Recompensa por vencer o jogo
+    FIM_PERIODO: 500            // Recompensa por terminar o período sem morrer
 };
 
 class Sala {
@@ -71,10 +71,8 @@ class Agente {
             this.sala = this.mundo[novaPosicaoX][this.y];
             this.x = novaPosicaoX;
             this.pontuacao += Pontuacoes.MOVIMENTO_VALIDO;
-            console.log("moveu norte", this.x, this.y);
         } else {
             this.pontuacao += Pontuacoes.MOVIMENTO_INVALIDO;
-            console.log("erro ao mover para o norte", this.x, this.y);
         }
     }
 
@@ -84,10 +82,8 @@ class Agente {
             this.sala = this.mundo[novaPosicaoX][this.y];
             this.x = novaPosicaoX;
             this.pontuacao += Pontuacoes.MOVIMENTO_VALIDO;
-            console.log("moveu sul", this.x, this.y);
         } else {
             this.pontuacao += Pontuacoes.MOVIMENTO_INVALIDO;
-            console.log("erro ao mover para o sul", this.x, this.y);
         }
     }
 
@@ -97,10 +93,8 @@ class Agente {
             this.sala = this.mundo[this.x][novaPosicaoY];
             this.y = novaPosicaoY;
             this.pontuacao += Pontuacoes.MOVIMENTO_VALIDO;
-            console.log("moveu leste", this.x, this.y);
         } else {
             this.pontuacao += Pontuacoes.MOVIMENTO_INVALIDO;
-            console.log("erro ao mover para o leste", this.x, this.y);
         }
     }
 
@@ -110,10 +104,8 @@ class Agente {
             this.sala = this.mundo[this.x][novaPosicaoY];
             this.y = novaPosicaoY;
             this.pontuacao += Pontuacoes.MOVIMENTO_VALIDO;
-            console.log("moveu oeste", this.x, this.y);
         } else {
             this.pontuacao += Pontuacoes.MOVIMENTO_INVALIDO;
-            console.log("erro ao mover para o oeste", this.x, this.y);
         }
     }
 
@@ -317,7 +309,6 @@ function renderizarMapa(mapaTamanho, d, mundo) {
 
     for (let x = 0; x < d; x++) {
         for (let y = 0; y < d; y++) {
-            // console.log(`Sala (${x}, ${y}) - Buraco: ${mundo.mundo[x][y].buraco}, Wumpus: ${mundo.mundo[x][y].wumpus}, Ouro: ${mundo.mundo[x][y].ouro}`);
             const salaDiv = document.createElement("div");
             salaDiv.id = `${x},${y}`;
             salaDiv.className = "sala";
@@ -399,7 +390,8 @@ function definirPercurso(mundo) {
     let individuos = [];
     for (let j = 0; j < ValoresGeracao.POPULACAO; j++) {
         let percurso = [];
-        let tamanhoPercurso = Math.floor(Math.random() * (d * 2)) + d * 2;
+        // let tamanhoPercurso = Math.floor(Math.random() * (d * 2)) + d * 2;
+        let tamanhoPercurso = d * 10;
 
         //percurso aleatório que representa o dna do agente
         for (let i = 0; i < tamanhoPercurso; i++) {
@@ -417,8 +409,6 @@ function definirPercurso(mundo) {
         individuos.push(new Individuo(percurso, 0, disparos));
     }
     agente.individuos = individuos;
-    console.log("geração 0");
-    console.log(agente.individuos);
 }
 
 function selecaoDeInidividuos(agente, tamanhoTorneio = 5) {
@@ -433,34 +423,30 @@ function selecaoDeInidividuos(agente, tamanhoTorneio = 5) {
 
 function reproduzirEvoluir(mundo) {
     let agente = mundo.agente;
+    let totalIndividuos = agente.individuos.length;
+    let quantidadeSelecionados = Math.floor(totalIndividuos * 0.85);
 
-    // usa de elitismo para manter o melhor individuo na população
-    // melhora o desempenho do agente em mapas um pouco maiores
+    // Usa elitismo para manter o melhor indivíduo
     const melhorIndividuo = agente.individuos.reduce((melhor, atual) =>
         (atual.pontuacao > melhor.pontuacao ? atual : melhor)
     );
     const indexMelhor = agente.individuos.indexOf(melhorIndividuo);
     agente.individuos.splice(indexMelhor, 1);
 
-    // seleciona 3 indivíduos adicionais usando torneio
-    //esses 3 somados com o melhor, irão para a reprodução
     const individuosSelecionados = [melhorIndividuo];
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < quantidadeSelecionados - 1; i++) {
         const individuo = selecaoDeInidividuos(agente);
         const index = agente.individuos.indexOf(individuo);
         agente.individuos.splice(index, 1);
         individuosSelecionados.push(individuo);
     }
 
-    let individuos = [melhorIndividuo]; //o melhor individuo, alem de ir para a reprodução, também vai fazer parte da população
-    //isso é elitismo!
+    let individuos = [melhorIndividuo];
 
-    // Gera 9 descendentes a partir de combinações entre os 4 indivíduos selecionados
     for (let i = 0; i < ValoresGeracao.POPULACAO - 1; i++) {
         let individuo1 = individuosSelecionados[Math.floor(Math.random() * individuosSelecionados.length)];
         let individuo2;
 
-        // Garante que individuo2 seja diferente de individuo1
         do {
             individuo2 = individuosSelecionados[Math.floor(Math.random() * individuosSelecionados.length)];
         } while (individuo1 === individuo2);
@@ -470,28 +456,19 @@ function reproduzirEvoluir(mundo) {
 
         const descendente = new Individuo(percurso, 0, disparos);
 
-        // Taxa de mutação dinâmica baseada no desempenho do melhor indivíduo
-        const taxaMutacaoBase = 0.1 + (0.2 * (1 - (melhorIndividuo.pontuacao / Pontuacoes.VITORIA)));
-        const taxaMutacao = Math.max(0.1, taxaMutacaoBase); // Nunca deixa a mutação abaixo de 0.1
-
-
-        //taxa de mutação estática
-        // const taxaMutacao = 0.5;
-        mutarIndividuo(descendente, mundo, taxaMutacao);
+        mutarIndividuo(descendente, mundo, 0.05);
 
         individuos.push(descendente);
     }
 
-
     agente.individuos = individuos;
 
     geracoes += 1;
-    console.log("nova geração");
-    console.log(agente.individuos);
 }
 
+
 function mutarIndividuo(individuo, mundo, taxaMutacao) {
-    const TAMANHO_MAXIMO_PERcurso = d * 10; // Defina um tamanho máximo
+    const TAMANHO_MAXIMO_PERcurso = d * 100; // Defina um tamanho máximo
 
     // Mutação do percurso existente
     for (let i = 0; i < individuo.percurso.length; i++) {
@@ -506,21 +483,21 @@ function mutarIndividuo(individuo, mundo, taxaMutacao) {
         }
     }
 
-    // Adicionando d movimentos aleatórios ao percurso
-    for (let i = 0; i < d; i++) {
-        const movimentos = [
-            mundo.agente.moverNorte.bind(mundo.agente),
-            mundo.agente.moverSul.bind(mundo.agente),
-            mundo.agente.moverLeste.bind(mundo.agente),
-            mundo.agente.moverOeste.bind(mundo.agente)
-        ];
-        individuo.percurso.push(movimentos[Math.floor(Math.random() * movimentos.length)]);
-    }
+    // // Adicionando d movimentos aleatórios ao percurso
+    // for (let i = 0; i < d; i++) {
+    //     const movimentos = [
+    //         mundo.agente.moverNorte.bind(mundo.agente),
+    //         mundo.agente.moverSul.bind(mundo.agente),
+    //         mundo.agente.moverLeste.bind(mundo.agente),
+    //         mundo.agente.moverOeste.bind(mundo.agente)
+    //     ];
+    //     individuo.percurso.push(movimentos[Math.floor(Math.random() * movimentos.length)]);
+    // }
 
-    // Limitar o tamanho do percurso
-    if (individuo.percurso.length > TAMANHO_MAXIMO_PERcurso) {
-        individuo.percurso = individuo.percurso.slice(0, TAMANHO_MAXIMO_PERcurso);
-    }
+    // // Limitar o tamanho do percurso
+    // if (individuo.percurso.length > TAMANHO_MAXIMO_PERcurso) {
+    //     individuo.percurso = individuo.percurso.slice(0, TAMANHO_MAXIMO_PERcurso);
+    // }
 
     // Mutação dos disparos
     for (let i = 0; i < individuo.disparos.length; i++) {
@@ -572,7 +549,6 @@ function rodarGame(mundo) {
     let posicoesWumpus = mundo.posicoesWumpus;
 
     let individuo = agente.individuos[agente.individuoAtual]; // Resgata o indivíduo usado atualmente
-    console.log("individuo: ", agente.individuoAtual, "passo: ", agente.individuos[agente.individuoAtual].i);
     individuo.percurso[individuo.i](); // Acessa o passo atual do indivíduo no seu percurso
     individuo.i += 1; // Após o passo, soma o índice
 
@@ -888,8 +864,6 @@ function carregarMundo() {
             //renderizar o novo mundo
             document.getElementById("mapa").innerHTML = "";
             renderizarMapa(mapaTamanhoPixels, mundoData.tamanho, mundo);
-
-            console.log("Mundo carregado e agente reinicializado com sucesso!");
         };
 
         reader.readAsText(file);
@@ -921,8 +895,6 @@ function carregarMundoPredefinido(nomeArquivo) {
             document.getElementById("mapa").innerHTML = "";
             renderizarMapa(mapaTamanhoPixels, mundoData.tamanho, mundo);
             definirPercurso(mundo);
-            console.log(mundo);
-            console.log(`Mundo "${nomeArquivo}" carregado com sucesso!`);
             iniciarGame();
         })
         .catch(error => {
@@ -993,7 +965,6 @@ document.getElementById("inputTamanhoSala").addEventListener("change", () => {
 
     document.getElementById("mapa").innerHTML = "";
     renderizarMapa(mapaTamanhoPixels, d, mundo);
-    console.log("Tamanho das salas atualizado para:", mapaTamanhoPixels);
 });
 
 let geracoes = 0;
@@ -1052,9 +1023,7 @@ switch (mundoSelecionado) {
         mundo = new Mundo(d);
         mundo.agente = new Agente(mundo.wumpus, mundo.mundo);
         definirPercurso(mundo);
-        console.log(mundo.agente.individuos);
         renderizarMapa(mapaTamanhoPixels, d, mundo);
-        console.log("Mundo inicial mantido.");
         document.getElementById("botaoSalvarMundo").style.display = "block";
         document.getElementById("botaoImportarMundo").style.display = "block";
         iniciarGame();
