@@ -1,3 +1,17 @@
+let dados = {
+    totalExecucoes: 0,
+    vitorias: 0,
+    ouroColetadoTotal: 0,
+    wumpusEliminados: 0,
+    vitoriasComWumpusEliminado: 0,
+    passosPorVitoria: [],
+    mortesPorWumpus: 0,
+    mortesPorBuraco: 0,
+    flechasDisparadas: 0,
+    flechasAcertadas: 0,
+    pontuacoes: []
+}
+
 class Sala {
     constructor(x, y) {
         this.x = x;
@@ -21,6 +35,11 @@ class Agente {
         this.flechas = flecha;
         this.mundo = mundo;
         this.ouro = 0;
+        this.passos = 0; // Contador de passos dados pelo agente
+        this.flechasDisparadas = 0; // Contador de flechas disparadas
+        this.flechasAcertadas = 0; // Contador de flechas que acertaram um Wumpus
+        this.wumpusEliminados = 0; // Contador de Wumpus eliminados
+        this.vitoriasComWumpusEliminado = 0; // Contador de vitórias com Wumpus eliminado
 
         this.x = 0;
         this.y = 0;
@@ -36,7 +55,7 @@ class Agente {
         try {
             this.sala = this.mundo[this.x - 1][this.y];
             this.x -= 1;
-
+            this.passos += 1; // Incrementa o contador de passos
         } catch (e) {
             console.log("erro ao mover para o norte");
         }
@@ -46,7 +65,7 @@ class Agente {
         try {
             this.sala = this.mundo[this.x + 1][this.y];
             this.x += 1;
-
+            this.passos += 1; // Incrementa o contador de passos
         } catch (e) {
             console.log("erro ao mover para o sul");
         }
@@ -56,7 +75,7 @@ class Agente {
         try {
             this.sala = this.mundo[this.x][this.y + 1];
             this.y += 1;
-
+            this.passos += 1; // Incrementa o contador de passos
         } catch (e) {
             console.log("erro ao mover para o leste");
         }
@@ -66,7 +85,7 @@ class Agente {
         try {
             this.sala = this.mundo[this.x][this.y - 1];
             this.y -= 1;
-
+            this.passos += 1; // Incrementa o contador de passos
         } catch (e) {
             console.log("erro ao mover para o oeste");
         }
@@ -74,9 +93,12 @@ class Agente {
 
     dispararNorte() {
         this.flechas -= 1;
+        this.flechasDisparadas += 1; // Incrementa o contador de flechas disparadas
 
         if (this.mundo[this.x - 1] && this.mundo[this.x - 1][this.y] && this.mundo[this.x - 1][this.y].wumpus != undefined) {
             this.mundo[this.x - 1][this.y].wumpus.vivo = false;
+            this.flechasAcertadas += 1; // Incrementa o contador de flechas acertadas
+            this.wumpusEliminados += 1; // Incrementa o contador de Wumpus eliminados
             return [true, this.x - 1, this.y];
         } else {
             return [false, 0, 0];
@@ -85,9 +107,12 @@ class Agente {
 
     dispararSul() {
         this.flechas -= 1;
+        this.flechasDisparadas += 1; // Incrementa o contador de flechas disparadas
 
         if (this.mundo[this.x + 1] && this.mundo[this.x + 1][this.y] && this.mundo[this.x + 1][this.y].wumpus != undefined) {
             this.mundo[this.x + 1][this.y].wumpus.vivo = false;
+            this.flechasAcertadas += 1; // Incrementa o contador de flechas acertadas
+            this.wumpusEliminados += 1; // Incrementa o contador de Wumpus eliminados
             return [true, this.x + 1, this.y];
         } else {
             return [false, 0, 0];
@@ -96,9 +121,12 @@ class Agente {
 
     dispararLeste() {
         this.flechas -= 1;
+        this.flechasDisparadas += 1; // Incrementa o contador de flechas disparadas
 
         if (this.mundo[this.x] && this.mundo[this.x][this.y + 1] && this.mundo[this.x][this.y + 1].wumpus != undefined) {
             this.mundo[this.x][this.y + 1].wumpus.vivo = false;
+            this.flechasAcertadas += 1; // Incrementa o contador de flechas acertadas
+            this.wumpusEliminados += 1; // Incrementa o contador de Wumpus eliminados
             return [true, this.x, this.y + 1];
         } else {
             return [false, 0, 0];
@@ -107,12 +135,22 @@ class Agente {
 
     dispararOeste() {
         this.flechas -= 1;
+        this.flechasDisparadas += 1; // Incrementa o contador de flechas disparadas
 
         if (this.mundo[this.x] && this.mundo[this.x][this.y - 1] && this.mundo[this.x][this.y - 1].wumpus != undefined) {
             this.mundo[this.x][this.y - 1].wumpus.vivo = false;
+            this.flechasAcertadas += 1; // Incrementa o contador de flechas acertadas
+            this.wumpusEliminados += 1; // Incrementa o contador de Wumpus eliminados
             return [true, this.x, this.y - 1];
         } else {
             return [false, 0, 0];
+        }
+    }
+
+    // Método para verificar se o agente venceu com um Wumpus eliminado
+    verificarVitoriaComWumpusEliminado() {
+        if (this.x === 0 && this.y === 0 && this.ouro > 0 && this.wumpusEliminados > 0) {
+            this.vitoriasComWumpusEliminado += 1;
         }
     }
 }
@@ -332,7 +370,7 @@ function restaurarMundo(mundo, posicoesOuro, posicoesWumpus) {
 
     posicoesWumpus.length = 0;
     posicoesOuro.length = 0;
-
+    console.log(dados);
 }
 
 function rodarGameAleatorio(mundo) {
@@ -382,6 +420,10 @@ function rodarGameAleatorio(mundo) {
             document.getElementById("mortes por wumpus").textContent = "Mortes por wumpus: " + mundo.mortesPorWumpus;
             document.getElementById("pontuacao").textContent = agente.pontuacao;
             restaurarMundo(mundo.mundo, posicoesOuro, posicoesWumpus);
+
+            // Atualizando dados
+            dados.mortesPorWumpus += 1;
+            dados.totalExecucoes += 1;
         }
     }
 
@@ -403,6 +445,10 @@ function rodarGameAleatorio(mundo) {
         document.getElementById("mortes por buraco").textContent = "Mortes por buraco: " + mundo.mortesPorBuraco;
         document.getElementById("pontuacao").textContent = agente.pontuacao;
         restaurarMundo(mundo.mundo, posicoesOuro, posicoesWumpus);
+
+        // Atualizando dados
+        dados.mortesPorBuraco += 1;
+        dados.totalExecucoes += 1;
     }
 
     //achou ouro
@@ -413,6 +459,9 @@ function rodarGameAleatorio(mundo) {
         agente.pontuacao -= 1;
         document.getElementById(agente.x + "," + agente.y + "_ouroItem").remove();
         document.getElementById("pontuacao").textContent = agente.pontuacao;
+
+        // Atualizando dados
+        dados.ouroColetadoTotal += 1;
     }
 
     //sentiu fedor, disparou
@@ -447,8 +496,14 @@ function rodarGameAleatorio(mundo) {
             document.getElementById(morreu[1] + "," + morreu[2] + "_wumpus").src = "textures/canvaWumpusMorto.png";
             mundo.wumpusMortos += 1;
             document.getElementById("Wumpus Mortos").textContent = "Canvas mortos: " + mundo.wumpusMortos;
+
+            // Atualizando dados
+            dados.wumpusEliminados += 1;
+            dados.flechasAcertadas += 1;
         }
 
+        // Atualizando dados
+        dados.flechasDisparadas += 1;
     }
 
     // chegou em 0,0 com ouro
@@ -460,6 +515,7 @@ function rodarGameAleatorio(mundo) {
         mundo.agentesNumero += 1;
         document.getElementById("logPontuacao").value = "Agente " + mundo.agentesNumero + ": " + agente.pontuacao + ", VITÓRIA!!!!!!!!!!!!!!!!" + "\n" + document.getElementById("logPontuacao").value;
 
+        dados.pontuacoes.push(agente.pontuacao);
         agente.pontuacao = 0;
         agente.flechas = mundo.wumpus;
         mundo.ouroColetado += 1;
@@ -468,6 +524,11 @@ function rodarGameAleatorio(mundo) {
         document.getElementById("flechasNumero").textContent = agente.flechas;
         document.getElementById("pontuacao").textContent = agente.pontuacao;
         restaurarMundo(mundo.mundo, posicoesOuro, posicoesWumpus);
+
+        // Atualizando dados
+        dados.vitorias += 1;
+        dados.totalExecucoes += 1;
+        dados.passosPorVitoria.push(agente.passos); // Supondo que você tenha uma variável `passos` no agente
     }
 
     if (agente.flechas > 0) {
@@ -626,6 +687,30 @@ document.getElementById("inputTamanhoSala").addEventListener("change", () => {
     document.getElementById("mapa").innerHTML = "";
     renderizarMapa(mapaTamanhoPixels, d, mundo);
     console.log("Tamanho das salas atualizado para:", mapaTamanhoPixels);
+});
+
+document.getElementById("botaoSalvarDados").addEventListener("click", function () {
+    // Converte o objeto `dados` para uma string JSON
+    const dadosJSON = JSON.stringify(dados, null, 2); // O `null, 2` formata o JSON com indentação
+
+    // Cria um blob (arquivo) com o conteúdo JSON
+    const blob = new Blob([dadosJSON], { type: "application/json" });
+
+    // Cria um link temporário para o blob
+    const url = URL.createObjectURL(blob);
+
+    // Cria um elemento <a> invisível para iniciar o download
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "dados.json"; // Nome do arquivo que será baixado
+    document.body.appendChild(link);
+
+    // Simula o clique no link para iniciar o download
+    link.click();
+
+    // Remove o link do DOM e revoga o URL do blob para liberar memória
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
 });
 
 document.getElementById("fieldMapaImaginario").remove();
