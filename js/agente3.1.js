@@ -1,3 +1,17 @@
+let dados = {
+    totalGeracoes: 0,                   // Total de gerações executadas
+    totalExecucoes: 0,                 // Total de execuções realizadas
+    vitorias: 0,                      // Total de vitórias
+    passosPorGeracao: [],             // Lista com número de passos por geração
+    impactosParedePorGeracao: [],     // Lista com impactos na parede por geração
+    geracoesParaPrimeiraVitoria: 0, // Geração em que ocorreu a primeira vitória
+    vitoriasComWumpusEliminado: 0,    // Vitórias com eliminação do Wumpus
+    mortesPorWumpus: 0,               // Total de mortes por Wumpus
+    mortesPorBuraco: 0,               // Total de mortes por poço
+    pontuacoesVitorias: [],           // Lista com pontuação das vitórias
+    wumpusMortos: 0
+};
+
 const ValoresGeracao = {
     POPULACAO: 50,
     QTDGERACOES: 1000
@@ -63,6 +77,9 @@ class Agente {
         this.mortes = 0;
         this.vitorias = 0;
         this.pontuacao = 0;
+
+        this.impactosParede = 0;
+        this.matouWumpus = false;
     }
 
     moverNorte() {
@@ -73,6 +90,7 @@ class Agente {
             this.pontuacao += Pontuacoes.MOVIMENTO_VALIDO;
         } else {
             this.pontuacao += Pontuacoes.MOVIMENTO_INVALIDO;
+            this.impactosParede += 1;
         }
     }
 
@@ -84,6 +102,7 @@ class Agente {
             this.pontuacao += Pontuacoes.MOVIMENTO_VALIDO;
         } else {
             this.pontuacao += Pontuacoes.MOVIMENTO_INVALIDO;
+            this.impactosParede += 1;
         }
     }
 
@@ -95,6 +114,7 @@ class Agente {
             this.pontuacao += Pontuacoes.MOVIMENTO_VALIDO;
         } else {
             this.pontuacao += Pontuacoes.MOVIMENTO_INVALIDO;
+            this.impactosParede += 1;
         }
     }
 
@@ -106,6 +126,7 @@ class Agente {
             this.pontuacao += Pontuacoes.MOVIMENTO_VALIDO;
         } else {
             this.pontuacao += Pontuacoes.MOVIMENTO_INVALIDO;
+            this.impactosParede += 1;
         }
     }
 
@@ -369,7 +390,6 @@ function restaurarMundo(mundo, posicoesOuro, posicoesWumpus) {
 
     posicoesWumpus.length = 0;
     posicoesOuro.length = 0;
-
 }
 
 //para criar um percurso inicial aleatório
@@ -426,6 +446,9 @@ function reproduzirEvoluir(mundo) {
     let totalIndividuos = agente.individuos.length;
     let quantidadeSelecionados = Math.floor(totalIndividuos * 0.85);
 
+    dados.impactosParedePorGeracao.push(agente.impactosParede);
+    agente.impactosParede = 0;
+
     // Usa elitismo para manter o melhor indivíduo
     const melhorIndividuo = agente.individuos.reduce((melhor, atual) =>
         (atual.pontuacao > melhor.pontuacao ? atual : melhor)
@@ -464,6 +487,10 @@ function reproduzirEvoluir(mundo) {
     agente.individuos = individuos;
 
     geracoes += 1;
+
+    if (dados.vitorias == 0) {
+        dados.geracoesParaPrimeiraVitoria += 1;
+    }
 }
 
 
@@ -482,22 +509,6 @@ function mutarIndividuo(individuo, mundo, taxaMutacao) {
             individuo.percurso[i] = movimentos[Math.floor(Math.random() * movimentos.length)];
         }
     }
-
-    // // Adicionando d movimentos aleatórios ao percurso
-    // for (let i = 0; i < d; i++) {
-    //     const movimentos = [
-    //         mundo.agente.moverNorte.bind(mundo.agente),
-    //         mundo.agente.moverSul.bind(mundo.agente),
-    //         mundo.agente.moverLeste.bind(mundo.agente),
-    //         mundo.agente.moverOeste.bind(mundo.agente)
-    //     ];
-    //     individuo.percurso.push(movimentos[Math.floor(Math.random() * movimentos.length)]);
-    // }
-
-    // // Limitar o tamanho do percurso
-    // if (individuo.percurso.length > TAMANHO_MAXIMO_PERcurso) {
-    //     individuo.percurso = individuo.percurso.slice(0, TAMANHO_MAXIMO_PERcurso);
-    // }
 
     // Mutação dos disparos
     for (let i = 0; i < individuo.disparos.length; i++) {
@@ -541,6 +552,8 @@ function misturarVetores(vetor1, vetor2) {
 }
 
 function rodarGame(mundo) {
+    console.log(dados);
+
     document.getElementById("agente").remove();
 
     let agente = mundo.agente;
@@ -687,6 +700,7 @@ function resetarMundo(mundo, posicoesOuro, posicoesWumpus) {
 
     posicoesWumpus.length = 0;
     posicoesOuro.length = 0;
+    mundo.agente.matouWumpus = false;
 }
 
 
@@ -706,6 +720,7 @@ function rodarGameBack(mundo) {
 
     // encontrou wumpus
     if (mundo.mundo[agente.x][agente.y].wumpus?.vivo) {
+        dados.mortesPorWumpus += 1;
         agente.mortes += 1;
         agente.pontuacao += Pontuacoes.MORTE_WUMPUS;
         document.getElementById("pontuacao").textContent = agente.pontuacao;
@@ -721,6 +736,7 @@ function rodarGameBack(mundo) {
 
     // Morreu para buraco
     if (mundo.mundo[agente.x][agente.y].buraco) {
+        dados.mortesPorBuraco += 1;
         agente.mortes += 1;
         agente.pontuacao += Pontuacoes.MORTE_BURACO;
         document.getElementById("pontuacao").textContent = agente.pontuacao;
@@ -753,6 +769,8 @@ function rodarGameBack(mundo) {
         individuo.j = (individuo.j + 1) % individuo.disparos.length;
 
         if (morreu[0]) {
+            agente.matouWumpus = true;
+            dados.wumpusMortos += 1;
             agente.pontuacao += Pontuacoes.WUMPUS_MORTO;
             document.getElementById("pontuacao").textContent = agente.pontuacao;
             posicoesWumpus.push([morreu[1], morreu[2]]);
@@ -770,6 +788,13 @@ function rodarGameBack(mundo) {
 
     // Chegou em 0,0 com ouro
     if (agente.x === 0 && agente.y === 0 && agente.ouro === ouro) {
+        dados.vitorias += 1;
+        dados.pontuacoesVitorias.push(agente.pontuacao);
+
+        if (agente.matouWumpus) {
+            dados.vitoriasComWumpusEliminado += 1;
+        }
+
         agente.vitorias += 1;
         agente.pontuacao += Pontuacoes.VITORIA;
         document.getElementById("pontuacao").textContent = agente.pontuacao;
@@ -796,6 +821,7 @@ function rodarGameBack(mundo) {
 
     // Fim do percurso
     if (individuo.i === individuo.percurso.length) {
+        dados.totalExecucoes += 1;
         individuo.i = 0;
         agente.pontuacao += Pontuacoes.FIM_PERIODO; // Aplica a penalidade de fim de período
         document.getElementById("pontuacao").textContent = agente.pontuacao;
@@ -967,6 +993,20 @@ document.getElementById("inputTamanhoSala").addEventListener("change", () => {
     renderizarMapa(mapaTamanhoPixels, d, mundo);
 });
 
+document.getElementById("botaoSalvarDados").addEventListener("click", () => {
+    const dadosJSON = JSON.stringify(dados, null, 2); // Converte 'dados' para JSON com indentação
+    const blob = new Blob([dadosJSON], { type: "application/json" }); // Cria o blob JSON
+    const url = URL.createObjectURL(blob); // Cria uma URL para o blob
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "dados.json"; // Nome do arquivo
+    document.body.appendChild(link);
+    link.click(); // Simula o clique para download
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url); // Libera a URL
+});
+
 let geracoes = 0;
 let internal;
 let rodando;
@@ -976,6 +1016,9 @@ function iniciarGame() {
 
     // Permite que a interface atualize antes de começar a evolução
     setTimeout(() => {
+
+        dados.totalGeracoes = ValoresGeracao.QTDGERACOES;
+
         while (geracoes < ValoresGeracao.QTDGERACOES) {
             rodarGameBack(mundo);
         }

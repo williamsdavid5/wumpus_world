@@ -1,3 +1,24 @@
+let dados = {
+    totalExecucoes: 0,
+    vitorias: 0,
+    ouroColetadoTotal: 0,
+    wumpusEliminados: 0,
+    vitoriasComWumpusEliminado: 0,
+    passosPorVitoria: [], // Lista com o número de passos de cada vitória
+    mortesPorWumpus: 0,
+    mortesPorBuraco: 0,
+    flechasDisparadas: 0,
+    flechasAcertadas: 0,
+    pontuacoes: [], // Lista com a pontuação de cada vitória
+
+    // Novas variáveis para armazenar os dados necessários para os cálculos:
+    mortesAntesDaPrimeiraVitoria: 0, // Contador de mortes antes da primeira vitória
+    primeiroVitoriaPassos: null, // Número de passos do primeiro caminho vencedor
+    primeiroVitoriaPontuacao: null, // Pontuação da primeira vitória
+    flechasDisparadasAntesDaPrimeiraVitoria: 0, // Contador de flechas disparadas antes da primeira vitória
+    flechasAcertadasAntesDaPrimeiraVitoria: 0 // Contador de flechas acertadas antes da primeira vitória
+};
+
 class Sala {
     constructor(x, y) {
         this.x = x;
@@ -67,10 +88,11 @@ class Agente {
         this.mundoImaginario[0][0].passou = true;
         renderizarMapaImaginario(mapaTamanhoPixels * 0.8, this.mundoImaginario.length, this.mundoImaginario, "mapaImaginario");
 
+        // Nova propriedade para contar passos
+        this.passos = 0;
     }
 
     imaginarMundo(movimentoPosicao) {
-
         if (movimentoPosicao == this.mundoImaginario.length) {
             let novoMundoImaginario = [];
 
@@ -107,6 +129,9 @@ class Agente {
             this.mundo[this.x][this.y].objetivo = false;
             this.pilhaDeMovimentos.push("N");
             this.imaginarMundo(this.x);
+
+            // Incrementar passos
+            this.passos += 1;
         } catch (e) {
             console.log("erro ao mover para o norte");
         }
@@ -121,7 +146,8 @@ class Agente {
             this.pilhaDeMovimentos.push("S");
             this.imaginarMundo(this.x);
 
-
+            // Incrementar passos
+            this.passos += 1;
         } catch (e) {
             console.log(e);
         }
@@ -135,6 +161,9 @@ class Agente {
             this.mundo[this.x][this.y].objetivo = false;
             this.pilhaDeMovimentos.push("L");
             this.imaginarMundo(this.y);
+
+            // Incrementar passos
+            this.passos += 1;
         } catch (e) {
             console.log("erro ao mover para o leste");
         }
@@ -148,6 +177,9 @@ class Agente {
             this.mundo[this.x][this.y].objetivo = false;
             this.pilhaDeMovimentos.push("O");
             this.imaginarMundo(this.y);
+
+            // Incrementar passos
+            this.passos += 1;
         } catch (e) {
             console.log("erro ao mover para o oeste");
         }
@@ -480,6 +512,7 @@ function restaurarMundo(mundo, posicoesOuro, posicoesWumpus, agente) {
 
     posicoesWumpus.length = 0;
     posicoesOuro.length = 0;
+    console.log(dados);
     agente.imaginarMundo(0);
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -557,6 +590,9 @@ function verificarSuspeitaWumpus(x, y, agente, mundo) {
                 agente.mundoImaginario[x][y].suspeitaFedor = false;
                 salaSuspeita = false;
 
+                // Atualizando dados: flechas disparadas
+                dados.flechasDisparadas += 1;
+
                 // se existe um wumpus na posicao onde ele atirou
                 if (mundo.mundo[x][y].wumpus !== null && mundo.mundo[x][y].wumpus.vivo == true) {
                     mundo.posicoesWumpus.push([x, y]);
@@ -572,6 +608,14 @@ function verificarSuspeitaWumpus(x, y, agente, mundo) {
                     document.getElementById(x + "," + y + "_wumpus").src = "textures/canvaWumpusMorto.png";
                     document.getElementById("Wumpus Mortos").textContent = "Canvas mortos: " + mundo.wumpusMortos;
 
+                    // Atualizando dados: Wumpus eliminados e flechas acertadas
+                    dados.wumpusEliminados += 1;
+                    dados.flechasAcertadas += 1;
+
+                    // Se o Wumpus foi eliminado durante uma vitória, atualize vitoriasComWumpusEliminado
+                    if (agente.x == 0 && agente.y == 0 && agente.carregandoOuro > 0) {
+                        dados.vitoriasComWumpusEliminado += 1;
+                    }
                 } else {
                     console.log("errou! ------------------------------------------------");
                 }
@@ -879,6 +923,10 @@ function rodarGame(mundo) {
         agente.pilhaDeMovimentos = [];
         document.getElementById(agente.x + "," + agente.y + "_ouroItem").remove();
         document.getElementById("pontuacao").textContent = agente.pontuacao;
+
+        // Atualizando dados
+        dados.ouroColetadoTotal += 1;
+        dados.totalExecucoes += 1;
     }
 
     // achou para wumpus
@@ -890,6 +938,11 @@ function rodarGame(mundo) {
             }
 
             agente.posicoesObjetivo.push([agente.x, agente.y, true]);
+
+            // No bloco de morte por Wumpus ou buraco
+            if (dados.vitorias === 0) {
+                dados.mortesAntesDaPrimeiraVitoria += 1;
+            }
 
             agente.x = agente.y = 0;
             agente.mortes += 1;
@@ -916,6 +969,10 @@ function rodarGame(mundo) {
             document.getElementById("mortes por wumpus").textContent = "Mortes por wumpus: " + mundo.mortesPorWumpus;
             document.getElementById("pontuacao").textContent = agente.pontuacao;
             restaurarMundo(mundo.mundo, posicoesOuro, posicoesWumpus, agente);
+
+            // Atualizando dados
+            dados.mortesPorWumpus += 1;
+            dados.totalExecucoes += 1;
         } else {
             let achou = false;
             for (let i = 0; i < agente.posicoesObjetivo.length; i++) {
@@ -1031,6 +1088,15 @@ function rodarGame(mundo) {
         document.getElementById("mortes por buraco").textContent = "Mortes por buraco: " + mundo.mortesPorBuraco;
         document.getElementById("pontuacao").textContent = agente.pontuacao;
         restaurarMundo(mundo.mundo, posicoesOuro, posicoesWumpus, agente);
+
+        // No bloco de morte por Wumpus ou buraco
+        if (dados.vitorias === 0) {
+            dados.mortesAntesDaPrimeiraVitoria += 1;
+        }
+
+        // Atualizando dados
+        dados.mortesPorBuraco += 1;
+        dados.totalExecucoes += 1;
     }
 
     //sentiu brisa
@@ -1128,6 +1194,21 @@ function rodarGame(mundo) {
 
             for (let i = 0; i < agente.posicoesObjetivo.length; i++) {
                 agente.posicoesObjetivo[i][2] = true;
+            }
+
+            // Atualizando dados
+            dados.vitorias += 1;
+            dados.passosPorVitoria.push(agente.passos); // Supondo que `agente.passos` seja o número de passos dados
+            agente.passos = 0;
+            dados.pontuacoes.push(agente.pontuacao);
+            dados.totalExecucoes += 1;
+
+            // Se for a primeira vitória, atualize os dados específicos
+            if (dados.primeiroVitoriaPassos === null) {
+                dados.primeiroVitoriaPassos = agente.passos;
+                dados.primeiroVitoriaPontuacao = agente.pontuacao;
+                dados.flechasDisparadasAntesDaPrimeiraVitoria = dados.flechasDisparadas;
+                dados.flechasAcertadasAntesDaPrimeiraVitoria = dados.flechasAcertadas;
             }
 
             agente.pilhaDeMovimentos = [];
@@ -1303,6 +1384,20 @@ document.getElementById("mostrarSensacoes").addEventListener("change", () => {
     renderizarMapa(mapaTamanhoPixels, d, mundo, "mapa");
 });
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+document.getElementById("botaoSalvarDados").addEventListener("click", () => {
+    const dadosJSON = JSON.stringify(dados, null, 2); // Converte 'dados' para JSON com indentação
+    const blob = new Blob([dadosJSON], { type: "application/json" }); // Cria o blob JSON
+    const url = URL.createObjectURL(blob); // Cria uma URL para o blob
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "dados.json"; // Nome do arquivo
+    document.body.appendChild(link);
+    link.click(); // Simula o clique para download
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url); // Libera a URL
+});
 
 
 let d = localStorage.getItem("dimensaoMapa");
