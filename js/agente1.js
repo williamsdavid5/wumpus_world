@@ -315,7 +315,7 @@ function renderizarMapa(mapaTamanho, d, mundo) {
             salaDiv.className = "sala";
 
             if (mundo.agente != null && mundo.agente.x == x && mundo.agente.y == y) {
-                salaDiv.innerHTML += "<img src=\"textures/linoAgenteArmado.png\" id=\"agente\" alt=\"\">";
+                salaDiv.innerHTML += "<img src=\"textures/linoRoboArmado.png\" id=\"agente\" alt=\"\">";
                 document.getElementById("mortesPontuacao").textContent = mundo.agente.mortes;
                 document.getElementById("vitoriasPontuacao").textContent = mundo.agente.vitorias;
                 document.getElementById("flechasNumero").textContent = mundo.agente.flechas;
@@ -532,9 +532,9 @@ function rodarGameAleatorio(mundo) {
     }
 
     if (agente.flechas > 0) {
-        document.getElementById(agente.x + "," + agente.y).innerHTML += "<img src=\"textures/linoAgenteArmado.png\" id=\"agente\" alt=\"\">";
+        document.getElementById(agente.x + "," + agente.y).innerHTML += "<img src=\"textures/linoRoboArmado.png\" id=\"agente\" alt=\"\">";
     } else {
-        document.getElementById(agente.x + "," + agente.y).innerHTML += "<img src=\"textures/linoAgente.png\" id=\"agente\" alt=\"\">";
+        document.getElementById(agente.x + "," + agente.y).innerHTML += "<img src=\"textures/linoRobo.png\" id=\"agente\" alt=\"\">";
     }
 }
 

@@ -37,3 +37,27 @@ selecionarMundo.addEventListener("change", function () {
         document.getElementById("dimensaoMapa").style.display = "none";
     }
 });
+
+let skins = [
+    "textures/linoRoboArmado.png",
+    "textures/linoAgenteArmado.png", // Corrigido caminho da imagem
+    "textures/linoNeandertalArmado.png"
+];
+
+agenteSelecionado.addEventListener("change", function () { // Corrigido nome do evento
+    let agente = agenteSelecionado.value;
+    let imagem = document.getElementById("skinLino");
+
+    switch (agente) {
+        case "agente1":
+            imagem.src = skins[0];
+            break;
+        case "agente2":
+            imagem.src = skins[1];
+            break;
+        case "agente3":
+        case "agente3.1": // Agrupado para evitar repetição
+            imagem.src = skins[2];
+            break;
+    }
+});
