@@ -1,14 +1,14 @@
 const Pontuacoes = {
-    MOVIMENTO_INVALIDO: -2000, // Penalidade por movimento inválido
-    MOVIMENTO_VALIDO: -100,       // Penalidade por movimento válido
-    OURO_COLETADO: 2000,        // Recompensa por coletar ouro
-    WUMPUS_MORTO: 2000,         // Recompensa por matar o Wumpus
-    FLECHA_DISPARADA: -10,      // Penalidade por disparar uma flecha
-    FLECHA_ERRADA: -500,        // Penalidade por errar o disparo
-    MORTE_WUMPUS: -1000,        // Penalidade por morrer para o Wumpus
-    MORTE_BURACO: -1000,        // Penalidade por morrer para um buraco
-    VITORIA: 8000,              // Recompensa por vencer o jogo
-    FIM_PERIODO: -250            // Recompensa por terminar o período sem morrer
+    MOVIMENTO_INVALIDO: -500, // Penalidade por movimento inválido
+    MOVIMENTO_VALIDO: -50,       // Penalidade por movimento válido
+    OURO_COLETADO: 5000,        // Recompensa por coletar ouro
+    WUMPUS_MORTO: 3000,         // Recompensa por matar o Wumpus
+    FLECHA_DISPARADA: -100,      // Penalidade por disparar uma flecha
+    FLECHA_ERRADA: -2000,        // Penalidade por errar o disparo
+    MORTE_WUMPUS: -5000,        // Penalidade por morrer para o Wumpus
+    MORTE_BURACO: -5000,        // Penalidade por morrer para um buraco
+    VITORIA: 20000,              // Recompensa por vencer o jogo
+    FIM_PERIODO: 500            // Recompensa por terminar o período sem morrer
 };
 
 class Sala {

@@ -39,9 +39,9 @@ selecionarMundo.addEventListener("change", function () {
 });
 
 let skins = [
-    "textures/linoRoboArmado.png",
-    "textures/linoAgenteArmado.png", // Corrigido caminho da imagem
-    "textures/linoNeandertalArmado.png"
+    "textures/interface/linoRoboArmado.png",
+    "textures/interface/linoAgenteArmadoMenu.png", // Corrigido caminho da imagem
+    "textures/interface/linoNeandertalArmado.png"
 ];
 
 agenteSelecionado.addEventListener("change", function () { // Corrigido nome do evento

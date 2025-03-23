@@ -12,6 +12,16 @@ let dados = {
     pontuacoes: []
 }
 
+const Pontuacoes = {
+    MOVIMENTO_VALIDO: -50,       // Penalidade por movimento válido
+    OURO_COLETADO: 5000,        // Recompensa por coletar ouro
+    WUMPUS_MORTO: 3000,         // Recompensa por matar o Wumpus
+    FLECHA_DISPARADA: -100,      // Penalidade por disparar uma flecha
+    MORTE_WUMPUS: -5000,        // Penalidade por morrer para o Wumpus
+    MORTE_BURACO: -5000,        // Penalidade por morrer para um buraco
+    VITORIA: 20000,              // Recompensa por vencer o jogo
+};
+
 class Sala {
     constructor(x, y) {
         this.x = x;
@@ -397,7 +407,7 @@ function rodarGameAleatorio(mundo) {
     }
 
     movimentos[Math.floor(Math.random() * movimentos.length)]();
-    agente.pontuacao -= 1;
+    agente.pontuacao += Pontuacoes.MOVIMENTO_VALIDO;
     document.getElementById("pontuacao").textContent = agente.pontuacao;
     // console.log(agente.x, agente.y);
 
@@ -407,7 +417,7 @@ function rodarGameAleatorio(mundo) {
             agente.x = agente.y = 0;
             agente.mortes += 1;
             agente.ouro = 0;
-            agente.pontuacao -= 1000;
+            agente.pontuacao += Pontuacoes.MORTE_WUMPUS;
 
             mundo.agentesNumero += 1;
             document.getElementById("logPontuacao").value = "Agente " + mundo.agentesNumero + ": " + agente.pontuacao + ", morto por canva" + "\n" + document.getElementById("logPontuacao").value;
@@ -431,7 +441,7 @@ function rodarGameAleatorio(mundo) {
     if (mundo.mundo[agente.x][agente.y].buraco) {
         agente.x = agente.y = 0;
         agente.mortes += 1;
-        agente.pontuacao -= 1000;
+        agente.pontuacao += Pontuacoes.MORTE_BURACO;
 
         mundo.agentesNumero += 1;
         document.getElementById("logPontuacao").value = "Agente " + mundo.agentesNumero + ": " + agente.pontuacao + ", morto por buraco" + "\n" + document.getElementById("logPontuacao").value;
@@ -456,7 +466,7 @@ function rodarGameAleatorio(mundo) {
         posicoesOuro.push([agente.x, agente.y]);
         mundo.mundo[agente.x][agente.y].ouro = false;
         agente.ouro += 1;
-        agente.pontuacao -= 1;
+        agente.pontuacao += Pontuacoes.OURO_COLETADO;
         document.getElementById(agente.x + "," + agente.y + "_ouroItem").remove();
         document.getElementById("pontuacao").textContent = agente.pontuacao;
 
@@ -481,7 +491,7 @@ function rodarGameAleatorio(mundo) {
             disparos.push(() => agente.dispararOeste());
         }
 
-        agente.pontuacao -= 10;
+        agente.pontuacao += Pontuacoes.FLECHA_DISPARADA;
         document.getElementById("pontuacao").textContent = agente.pontuacao;
         mundo.flechasDisparadas += 1;
         let morreu = disparos[Math.floor(Math.random() * disparos.length)]();
@@ -491,7 +501,7 @@ function rodarGameAleatorio(mundo) {
 
         if (morreu[0]) {
             // console.log(morreu[1], morreu[2]);
-            agente.pontuacao += 1000;
+            agente.pontuacao += Pontuacoes.WUMPUS_MORTO;
             posicoesWumpus.push([morreu[1], morreu[2]]);
             document.getElementById(morreu[1] + "," + morreu[2] + "_wumpus").src = "textures/canvaWumpusMorto.png";
             mundo.wumpusMortos += 1;
@@ -509,7 +519,7 @@ function rodarGameAleatorio(mundo) {
     // chegou em 0,0 com ouro
     if (agente.x == 0 && agente.y == 0 && agente.ouro == ouro) {
         agente.vitorias += 1;
-        agente.pontuacao += 1000;
+        agente.pontuacao += Pontuacoes.VITORIA;
         agente.ouro = 0;
 
         mundo.agentesNumero += 1;

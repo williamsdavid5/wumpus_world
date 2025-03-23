@@ -19,6 +19,16 @@ let dados = {
     flechasAcertadasAntesDaPrimeiraVitoria: 0 // Contador de flechas acertadas antes da primeira vitória
 };
 
+const Pontuacoes = {
+    MOVIMENTO_VALIDO: -50,       // Penalidade por movimento válido
+    OURO_COLETADO: 5000,        // Recompensa por coletar ouro
+    WUMPUS_MORTO: 3000,         // Recompensa por matar o Wumpus
+    FLECHA_DISPARADA: -100,      // Penalidade por disparar uma flecha
+    MORTE_WUMPUS: -5000,        // Penalidade por morrer para o Wumpus
+    MORTE_BURACO: -5000,        // Penalidade por morrer para um buraco
+    VITORIA: 20000,              // Recompensa por vencer o jogo
+};
+
 class Sala {
     constructor(x, y) {
         this.x = x;
@@ -529,11 +539,11 @@ function verificarCaminho(x, y, agente, mundo) {
         }
 
         if (agente.mundoImaginario[x][y].wumpus != null && agente.mundoImaginario[x][y].wumpus.vivo == true) {
-            agente.pontuacao -= 10;
+            agente.pontuacao += Pontuacoes.FLECHA_DISPARADA;
             document.getElementById("pontuacao").textContent = agente.pontuacao;
             mundo.posicoesWumpus.push([x, y]);
             mundo.flechasDisparadas += 1;
-            agente.pontuacao += 1000;
+            agente.pontuacao += Pontuacoes.WUMPUS_MORTO;
             agente.flechas -= 1;
             mundo.mundo[x][y].wumpus.vivo = false;
 
@@ -583,7 +593,7 @@ function verificarSuspeitaWumpus(x, y, agente, mundo) {
 
         if (qtdFedor >= 2) {
             if (agente.flechas > 0) {
-                agente.pontuacao -= 10;
+                agente.pontuacao += Pontuacoes.FLECHA_DISPARADA;
                 mundo.flechasDisparadas += 1;
                 agente.flechas -= 1;
                 agente.listaBrancaSuspeitaFedor.push([x, y]);
@@ -596,7 +606,7 @@ function verificarSuspeitaWumpus(x, y, agente, mundo) {
                 // se existe um wumpus na posicao onde ele atirou
                 if (mundo.mundo[x][y].wumpus !== null && mundo.mundo[x][y].wumpus.vivo == true) {
                     mundo.posicoesWumpus.push([x, y]);
-                    agente.pontuacao += 1000;
+                    agente.pontuacao += Pontuacoes.WUMPUS_MORTO;
                     mundo.mundo[x][y].wumpus.vivo = false;
                     //guarda a posicao do wumpus, agora ele sabe onde ta
                     agente.posicoesObjetivo.push([x, y, false]);
@@ -889,7 +899,7 @@ function rodarGame(mundo) {
 
     }
 
-    agente.pontuacao -= 1;
+    agente.pontuacao += Pontuacoes.MOVIMENTO_VALIDO;
     document.getElementById("pontuacao").textContent = agente.pontuacao;
 
     //achou ouro
@@ -919,7 +929,7 @@ function rodarGame(mundo) {
         mundo.mundo[agente.x][agente.y].ouro = false;
         agente.ouro += 1;
         agente.carregandoOuro += 1;
-        agente.pontuacao -= 1;
+        agente.pontuacao += Pontuacoes.MOVIMENTO_VALIDO;
         agente.pilhaDeMovimentos = [];
         document.getElementById(agente.x + "," + agente.y + "_ouroItem").remove();
         document.getElementById("pontuacao").textContent = agente.pontuacao;
@@ -947,7 +957,7 @@ function rodarGame(mundo) {
             agente.x = agente.y = 0;
             agente.mortes += 1;
             agente.ouro = 0;
-            agente.pontuacao -= 1000;
+            agente.pontuacao += Pontuacoes.MORTE_WUMPUS;
 
             mundo.agentesNumero += 1;
             document.getElementById("logPontuacao").value = "Agente " + mundo.agentesNumero + ": " + agente.pontuacao + ", morto por canva" + "\n" + document.getElementById("logPontuacao").value;
@@ -1063,7 +1073,7 @@ function rodarGame(mundo) {
         console.log("morto por buraco!!!!!!!!!!");
         agente.x = agente.y = 0;
         agente.mortes += 1;
-        agente.pontuacao -= 1000;
+        agente.pontuacao += Pontuacoes.MORTE_BURACO;
 
         mundo.agentesNumero += 1;
         document.getElementById("logPontuacao").value = "Agente " + mundo.agentesNumero + ": " + agente.pontuacao + ", morto por buraco" + "\n" + document.getElementById("logPontuacao").value;
@@ -1182,7 +1192,7 @@ function rodarGame(mundo) {
 
         if (agente.ouro == ouro) {
             agente.vitorias += 1;
-            agente.pontuacao += 1000;
+            agente.pontuacao += Pontuacoes.VITORIA;
             agente.ouro = 0;
 
             if (!document.getElementById("usarReencarnacao").checked) {
