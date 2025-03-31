@@ -9,7 +9,9 @@ let dados = {
     mortesPorWumpus: 0,               // Total de mortes por Wumpus
     mortesPorBuraco: 0,               // Total de mortes por poço
     pontuacoesVitorias: [],           // Lista com pontuação das vitórias
-    wumpusMortos: 0
+    wumpusMortos: 0,
+    melhorIndividuoCadaGeracao: [],
+    piorInidivduoCadaGeracao: []
 };
 
 const ValoresGeracao = {
@@ -27,7 +29,6 @@ const Pontuacoes = {
     MORTE_WUMPUS: -5000,        // Penalidade por morrer para o Wumpus
     MORTE_BURACO: -5000,        // Penalidade por morrer para um buraco
     VITORIA: 20000,              // Recompensa por vencer o jogo
-    FIM_PERIODO: 500            // Recompensa por terminar o período sem morrer
 };
 
 class Sala {
@@ -453,6 +454,13 @@ function reproduzirEvoluir(mundo) {
     const melhorIndividuo = agente.individuos.reduce((melhor, atual) =>
         (atual.pontuacao > melhor.pontuacao ? atual : melhor)
     );
+
+    const piorInidivduo = agente.individuos.reduce((melhor, atual) =>
+        (atual.pontuacao < melhor.pontuacao ? atual : melhor)
+    );
+    dados.piorInidivduoCadaGeracao.push(piorInidivduo.pontuacao);
+    dados.melhorIndividuoCadaGeracao.push(melhorIndividuo.pontuacao);
+
     const indexMelhor = agente.individuos.indexOf(melhorIndividuo);
     agente.individuos.splice(indexMelhor, 1);
 
@@ -823,7 +831,6 @@ function rodarGameBack(mundo) {
     if (individuo.i === individuo.percurso.length) {
         dados.totalExecucoes += 1;
         individuo.i = 0;
-        agente.pontuacao += Pontuacoes.FIM_PERIODO; // Aplica a penalidade de fim de período
         document.getElementById("pontuacao").textContent = agente.pontuacao;
         individuo.pontuacao = agente.pontuacao; // Atribui a pontuação ao indivíduo
         agente.pontuacao = 0; // Reinicializa a pontuação do agente

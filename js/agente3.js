@@ -1,14 +1,13 @@
 const Pontuacoes = {
-    MOVIMENTO_INVALIDO: -500, // Penalidade por movimento inválido
-    MOVIMENTO_VALIDO: -50,       // Penalidade por movimento válido
-    OURO_COLETADO: 5000,        // Recompensa por coletar ouro
-    WUMPUS_MORTO: 3000,         // Recompensa por matar o Wumpus
-    FLECHA_DISPARADA: -100,      // Penalidade por disparar uma flecha
-    FLECHA_ERRADA: -2000,        // Penalidade por errar o disparo
-    MORTE_WUMPUS: -5000,        // Penalidade por morrer para o Wumpus
-    MORTE_BURACO: -5000,        // Penalidade por morrer para um buraco
-    VITORIA: 20000,              // Recompensa por vencer o jogo
-    FIM_PERIODO: 500            // Recompensa por terminar o período sem morrer
+    MOVIMENTO_INVALIDO: -500,
+    MOVIMENTO_VALIDO: -50,
+    OURO_COLETADO: 5000,
+    WUMPUS_MORTO: 3000,
+    FLECHA_DISPARADA: -100,
+    FLECHA_ERRADA: -2000,
+    MORTE_WUMPUS: -5000,
+    MORTE_BURACO: -5000,
+    VITORIA: 20000,
 };
 
 class Sala {
@@ -722,7 +721,6 @@ function rodarGame(mundo) {
     if (individuo.i == individuo.percurso.length) {
         //zera o indice do agente atual, atribui a pontuação, zera a pontuação do agente e altera o indice
         individuo.i = 0;
-        agente.pontuacao += Pontuacoes.FIM_PERIODO;
         individuo.pontuacao = agente.pontuacao;
         agente.pontuacao = 0;
 
