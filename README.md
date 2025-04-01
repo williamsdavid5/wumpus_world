@@ -1,3 +1,5 @@
+Acesse a [nossa apresentação](https://docs.google.com/presentation/d/1OAlmbVPbbXiaXn_-K-xiOk_SYzBR5JKo_lOJ-Qw9jQU/edit?usp=sharing) para ter uma visão geral dos aspectos mais importantes. Um [documento simples](https://drive.google.com/file/d/1wKG15bLRXMJZnD_EnKJu7wCrwGaLQYlR/view?usp=sharing) explicando a lógica do projeto também foi criado.
+
 # O Mundo de Wumpus
 O Mundo de Wumpus é um ambiente clássico de teste para agentes inteligentes, utilizado amplamente na pesquisa de Inteligência Artificial (IA). Trata-se de um jogo baseado em lógica e tomada de decisão em um ambiente parcialmente observável e estocástico. O objetivo do agente é explorar um mundo quadrático (geralmente representado como uma grade 4x4) em busca de ouro, evitando buracos mortais e um monstro chamado Wumpus.
 
